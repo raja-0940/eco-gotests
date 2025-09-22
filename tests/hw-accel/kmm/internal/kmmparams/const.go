@@ -13,7 +13,7 @@ FROM ${DTK_AUTO} as builder
 ARG KERNEL_VERSION
 ARG MY_MODULE
 WORKDIR /build
-RUN git clone https://github.com/cdvultur/kmm-kmod.git
+RUN git clone https://github.com/raja-0940/kmm-kmod.git
 WORKDIR /build/kmm-kmod
 RUN cp kmm_ci_a.c {{.Module}}.c
 RUN make KVER=${KERNEL_VERSION}
@@ -247,6 +247,13 @@ const (
 	// Compatible with OpenShift Container Platform 4.18.
 	PreflightDTKImageARM64 = "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:" +
 		"ada767898092f36e8d965292843f9a772b2df449aeda06580430162696bd5ddf"
+	// PreflightDTKImagePpc64le represents PPC64LE DTK image for KMM 2.4 preflightvalidationocp.
+	PreflightDTKImagePPC64LE = "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:" +
+	        "7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92"
+	// KernelForDTKPpc64le represents kernel string for ppc64le dtk image.
+	KernelForDTKPpc64le = "5.14.0-570.41.1.el9_6.ppc64le"
+	// KernelForDTKPpc64leRealtime represents kernel string for ppc64le realtime dtk image.
+	KernelForDTKPpc64leRealtime = "not supported"
 	// KernelForDTKArm64 represents kernel string for arm64 dtk image.
 	KernelForDTKArm64 = "5.14.0-284.52.1.el9_2.aarch64"
 	// KernelForDTKArm64Realtime represents kernel string for arm64 realtime dtk image.

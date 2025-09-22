@@ -134,10 +134,13 @@ func PreflightImage(arch string) string {
 	// Use specific DTK images with SHA for KMM 2.4 compatibility
 	if arch == "arm64" || arch == "aarch64" {
 		return kmmparams.PreflightDTKImageARM64
+	} else if arch == "ppc64le" {
+		return kmmparams.PreflightDTKImagePPC64LE
+	} else {
+		// Default to x86_64/amd64
+		return kmmparams.PreflightDTKImageX86
 	}
 
-	// Default to x86_64/amd64
-	return kmmparams.PreflightDTKImageX86
 }
 
 // PreflightKernel returns predefined kernel version string based on architecture and realtime flag.
@@ -148,6 +151,11 @@ func PreflightKernel(arch string, realtime bool) string {
 		}
 
 		return kmmparams.KernelForDTKArm64
+	} else if arch == "ppc64le" {
+		if realtime {
+			return kmmparams.KernelForDTKPpc64leRealtime
+		}
+		return kmmparams.KernelForDTKPpc64le
 	}
 
 	if realtime {
