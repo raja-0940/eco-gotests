@@ -5,7 +5,7 @@ const (
 	Label = "kmm"
 
 	// KmmLogLevel custom loglevel of KMM related functions.
-	KmmLogLevel = 90
+	KmmLogLevel = 1
 
 	// MultistageContents represents the Dockerfile contents for multi stage build.
 	MultistageContents = `ARG DTK_AUTO

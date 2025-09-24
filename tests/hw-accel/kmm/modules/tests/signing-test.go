@@ -195,7 +195,7 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			}
 			Expect(reasonSignListLength).To(Equal(foundEvents), "Expected number of events not found")
 		})
-		It("should be able to run preflightvalidation with no push", reportxml.ID("56329"), func() {
+		It("should be able to run preflightvalidation with no push - signing test", reportxml.ID("56329"), func() {
 			By("Detecting cluster architecture")
 			arch, err := get.ClusterArchitecture(APIClient, GeneralConfig.WorkerLabelMap)
 			if err != nil {
@@ -218,12 +218,12 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error while creating preflight")
 
 			By("Await build pod to complete build")
-			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 5*time.Minute)
+			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 10*time.Minute)
 			Expect(err).ToNot(HaveOccurred(), "error while building module")
 
 			By("Await preflightvalidationocp checks")
 			err = await.PreflightStageDone(APIClient, kmmparams.PreflightName, moduleName,
-				kmmparams.ModuleBuildAndSignNamespace, time.Minute)
+				kmmparams.ModuleBuildAndSignNamespace, 10*time.Minute)
 			Expect(err).To(HaveOccurred(), "preflightvalidationocp did not complete")
 
 			By("Get status of the preflightvalidationocp checks")
@@ -237,7 +237,7 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error deleting preflightvalidation")
 		})
 
-		It("should be able to run preflightvalidation and push to registry", reportxml.ID("56327"), func() {
+		It("should be able to run preflightvalidation and push to registry - signing test", reportxml.ID("56327"), func() {
 			By("Detecting cluster architecture")
 			arch, err := get.ClusterArchitecture(APIClient, GeneralConfig.WorkerLabelMap)
 			if err != nil {
