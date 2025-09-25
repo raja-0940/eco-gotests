@@ -218,12 +218,18 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error while creating preflight")
 
 			By("Await build pod to complete build")
-			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 10*time.Minute)
+			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 5*time.Minute)
 			Expect(err).ToNot(HaveOccurred(), "error while building module")
 
 			By("Await preflightvalidationocp checks")
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] calling PreflightStageDone with PreflightName=%s, ModuleName=%s, Namespace=%s\n    ", kmmparams.PreflightName, moduleName, kmmparams.ModuleBuildAndSignNamespace)
 			err = await.PreflightStageDone(APIClient, kmmparams.PreflightName, moduleName,
-				kmmparams.ModuleBuildAndSignNamespace, 10*time.Minute)
+				kmmparams.ModuleBuildAndSignNamespace, 3*time.Minute)
+			if err != nil {
+				glog.V(kmmparams.KmmLogLevel).Infof("[DUBUG] PreflightStageDone returned error: %v\n", err)
+			} else {
+				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] PreflightStageDone completed successfully, err=nil\n")
+			}
 			Expect(err).To(HaveOccurred(), "preflightvalidationocp did not complete")
 
 			By("Get status of the preflightvalidationocp checks")

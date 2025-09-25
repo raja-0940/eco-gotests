@@ -1,0 +1,520 @@
+2025/09/25 02:12:54 maxprocs: Leaving GOMAXPROCS=16: CPU quota undefined
+2025/09/25 02:13:01 Creating new ModulesConfig
+2025/09/25 02:13:01 Creating new GeneralConfig struct
+Running Suite: KMM - /root/eco-gotests/tests/hw-accel/kmm/modules
+[38;5;204m[hw-accel, kmm, module][0m 
+=================================================================
+Random Seed: [1m1758780774[0m
+
+Will run [1m4[0m of [1m48[0m specs
+[38;5;243m------------------------------[0m
+[0m[1m[BeforeSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:44[0m
+  > Enter [1m[BeforeSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:44 @ 09/25/25 02:13:01.415[0m
+  [1mSTEP:[0m Prepare environment for KMM tests execution [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:45 @ 09/25/25 02:13:01.415[0m
+  [1mSTEP:[0m Create helper ServiceAccount [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:47 @ 09/25/25 02:13:01.415[0m
+  [1mSTEP:[0m Create helper ClusterRoleBinding [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:52 @ 09/25/25 02:13:01.485[0m
+  [1mSTEP:[0m Create helper Deployments [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:57 @ 09/25/25 02:13:01.508[0m
+  < Exit [1m[BeforeSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:44 @ 09/25/25 02:13:09.717 (8.302s)[0m
+[38;5;10m[BeforeSuite] PASSED [8.302 seconds][0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/device-plugin-test.go:25[0m
+  Module [38;5;204m[devplug, kmm-short][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/device-plugin-test.go:27[0m
+    [38;5;14m[1mshould deploy module with a device plugin[0m [38;5;204m[53678, test_id:53678][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/device-plugin-test.go:58[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:25[0m
+  Module [38;5;204m[versions][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:26[0m
+    [38;5;14m[1mshould be able to use a version[0m [38;5;204m[63112, test_id:63112][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:108[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:25[0m
+  Module [38;5;204m[versions][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:26[0m
+    [38;5;14m[1mshould upgrade from a version to another[0m [38;5;204m[63111, test_id:63111][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/version-test.go:160[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:28[0m
+  Module [38;5;204m[multi-stage][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:30[0m
+    [38;5;14m[1mshould use internal image-stream[0m [38;5;204m[53651, test_id:53651][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:76[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:28[0m
+  Module [38;5;204m[multi-stage][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:30[0m
+    [38;5;14m[1mshould sign an existing image and load the signed module[0m [38;5;204m[53677, test_id:53677][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multi-stage.go:139[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    KernelMapping [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:41[0m
+      [38;5;14m[1mshould fail if no container image is specified in the module[0m [38;5;204m[62601, test_id:62601][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:43[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    KernelMapping [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:41[0m
+      [38;5;14m[1mshould fail if the regexp isn't valid in the module[0m [38;5;204m[62602, test_id:62602][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:65[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    KernelMapping [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:41[0m
+      [38;5;14m[1mshould fail if no regexp nor literal are set in a kernel mapping[0m [38;5;204m[62603, test_id:62603][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:86[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    KernelMapping [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:41[0m
+      [38;5;14m[1mshould fail if both regexp and literal are set in a kernel mapping[0m [38;5;204m[62604, test_id:62604][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:108[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Modprobe [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:131[0m
+      [38;5;14m[1mshould fail if there are duplications in modulesLoadingOrder[0m [38;5;204m[62742, test_id:62742][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:133[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Modprobe [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:131[0m
+      [38;5;14m[1mshould fail if the 'main' kmod isn't the first one in modulesLoadingOrder[0m [38;5;204m[64227, test_id:64227][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:159[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Modprobe [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:131[0m
+      [38;5;14m[1mshould fail creating module with both moduleName and rawargs[0m [38;5;204m[62600, test_id:62600][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:185[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Modprobe [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:131[0m
+      [38;5;14m[1mshould require rawargs when moduleName is not net[0m [38;5;204m[62599, test_id:62599][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:212[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Modprobe [38;5;204m[webhook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:131[0m
+      [38;5;14m[1mshould require image tag or digest for container image[0m [38;5;204m[75990, test_id:75990][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:237[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Tolerations [38;5;204m[wehbook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:262[0m
+      [38;5;14m[1mshould allow only specific effects[0m [38;5;204m[81516, test_id:81516][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:264[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Tolerations [38;5;204m[wehbook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:262[0m
+      [38;5;14m[1mshould allow only specific operator[0m [38;5;204m[81515, test_id:81515][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:293[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:21[0m
+  Module [38;5;204m[webhook][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:23[0m
+    Tolerations [38;5;204m[wehbook][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:262[0m
+      [38;5;14m[1mshould check value is empty for operator Exists[0m [38;5;204m[81514, test_id:81514][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/webhook-test.go:323[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould build and push image to quay[0m [38;5;204m[53584, test_id:53584][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:75[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould delete simple-kmod module[0m [38;5;204m[53413, test_id:53413][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:141[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould generate events on nodes when module is loaded[0m [38;5;204m[68106, test_id:68106][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:160[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould deploy prebuild image[0m [38;5;204m[53395, test_id:53395][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:193[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould delete simple-kmod module[0m [38;5;204m[53413, test_id:53413][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:234[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould deploy prebuild image with global secret[0m [38;5;204m[71694, test_id:71694][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:253[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:30[0m
+  Module [38;5;204m[simple-kmod][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:32[0m
+    [38;5;14m[1mshould build image without loading it[0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/external-registry-test.go:308[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multiple-modules.go:23[0m
+  Module [38;5;204m[multiple][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multiple-modules.go:25[0m
+    Modprobe [38;5;204m[multiple][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multiple-modules.go:54[0m
+      [38;5;14m[1mshould fail if any of the modules is not present[0m [38;5;204m[62743, test_id:62743][0m
+      [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/multiple-modules.go:56[0m
+[38;5;243m------------------------------[0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [0m[1mshould use build and sign a module[0m [38;5;204m[56252, test_id:56252][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:69[0m
+  > Enter [1m[It][0m should use build and sign a module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:69 @ 09/25/25 02:13:09.719[0m
+  [1mSTEP:[0m Create Namespace [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:71 @ 09/25/25 02:13:09.719[0m
+  [1mSTEP:[0m Creating my-signing-key-pub [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:75 @ 09/25/25 02:13:09.73[0m
+  [1mSTEP:[0m Creating my-signing-key [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:82 @ 09/25/25 02:13:09.756[0m
+  [1mSTEP:[0m Create ConfigMap [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:89 @ 09/25/25 02:13:09.78[0m
+  [1mSTEP:[0m Create ServiceAccount [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:97 @ 09/25/25 02:13:09.798[0m
+  [1mSTEP:[0m Create ClusterRoleBinding [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:102 @ 09/25/25 02:13:09.814[0m
+  [1mSTEP:[0m Create KernelMapping [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:107 @ 09/25/25 02:13:09.832[0m
+  [1mSTEP:[0m Create ModuleLoaderContainer [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:117 @ 09/25/25 02:13:09.832[0m
+  [1mSTEP:[0m Create Module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:124 @ 09/25/25 02:13:09.832[0m
+  [1mSTEP:[0m Await build pod to complete build [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:132 @ 09/25/25 02:13:09.892[0m
+  [1mSTEP:[0m Await driver container deployment [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:136 @ 09/25/25 02:14:24.902[0m
+  [1mSTEP:[0m Check module is loaded on node [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:141 @ 09/25/25 02:14:44.921[0m
+  [1mSTEP:[0m Check module is signed [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:145 @ 09/25/25 02:14:45.242[0m
+  [1mSTEP:[0m Check label is set on all nodes [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:150 @ 09/25/25 02:14:46.411[0m
+  < Exit [1m[It][0m should use build and sign a module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:69 @ 09/25/25 02:14:46.419 (1m36.7s)[0m
+  > Enter [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.419[0m
+  < Exit [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.419 (0s)[0m
+[38;5;10m• [96.700 seconds][0m
+[38;5;243m------------------------------[0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [0m[1mshould generate event about build being created and completed[0m [38;5;204m[68110, test_id:68110][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:156[0m
+  > Enter [1m[It][0m should generate event about build being created and completed [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:156 @ 09/25/25 02:14:46.419[0m
+  [1mSTEP:[0m Getting events from module's namespace [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:157 @ 09/25/25 02:14:46.419[0m
+  < Exit [1m[It][0m should generate event about build being created and completed [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:156 @ 09/25/25 02:14:46.433 (14ms)[0m
+  > Enter [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.433[0m
+  < Exit [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.433 (0s)[0m
+[38;5;10m• [0.014 seconds][0m
+[38;5;243m------------------------------[0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [0m[1mshould generate event about sign being created and completed[0m [38;5;204m[68108, test_id:68108][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:178[0m
+  > Enter [1m[It][0m should generate event about sign being created and completed [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:178 @ 09/25/25 02:14:46.433[0m
+  [1mSTEP:[0m Getting events from module's namespace [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:179 @ 09/25/25 02:14:46.433[0m
+  < Exit [1m[It][0m should generate event about sign being created and completed [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:178 @ 09/25/25 02:14:46.444 (11ms)[0m
+  > Enter [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.445[0m
+  < Exit [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:14:46.445 (0s)[0m
+[38;5;10m• [0.012 seconds][0m
+[38;5;243m------------------------------[0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [0m[1mshould be able to run preflightvalidation with no push - signing test[0m [38;5;204m[56329, test_id:56329][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198[0m
+  > Enter [1m[It][0m should be able to run preflightvalidation with no push - signing test [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198 @ 09/25/25 02:14:46.445[0m
+  [1mSTEP:[0m Detecting cluster architecture [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:199 @ 09/25/25 02:14:46.445[0m
+  [1mSTEP:[0m Get kernel version for preflight [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:205 @ 09/25/25 02:14:46.514[0m
+  [1mSTEP:[0m Get the DTK Image for preflight test [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:208 @ 09/25/25 02:14:46.514[0m
+  [1mSTEP:[0m Create preflightvalidationocp [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:211 @ 09/25/25 02:14:46.514[0m
+  [1mSTEP:[0m Await build pod to complete build [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:220 @ 09/25/25 02:14:46.535[0m
+  [1mSTEP:[0m Await preflightvalidationocp checks [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:224 @ 09/25/25 02:16:01.545[0m
+  [38;5;9m[FAILED] preflightvalidationocp did not complete
+  Expected an error to have occurred.  Got:
+      <nil>: nil[0m
+  [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:233[0m [38;5;243m@ 09/25/25 02:16:16.561[0m
+  < Exit [1m[It][0m should be able to run preflightvalidation with no push - signing test [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198 @ 09/25/25 02:16:16.561 (1m30.117s)[0m
+  > Enter [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:16:16.561[0m
+  < Exit [1m[JustAfterEach][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:133 @ 09/25/25 02:16:16.562 (0s)[0m
+  > Enter [1m[AfterAll][0m Module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:41 @ 09/25/25 02:16:16.562[0m
+  [1mSTEP:[0m Delete Module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:42 @ 09/25/25 02:16:16.562[0m
+  [1mSTEP:[0m Await module to be deleted [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:46 @ 09/25/25 02:16:16.581[0m
+  [1mSTEP:[0m Delete ClusterRoleBinding [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:53 @ 09/25/25 02:16:21.591[0m
+  [1mSTEP:[0m Delete preflightvalidationocp [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:58 @ 09/25/25 02:16:21.605[0m
+  [1mSTEP:[0m Delete Namespace [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:63 @ 09/25/25 02:16:21.623[0m
+  < Exit [1m[AfterAll][0m Module [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:41 @ 09/25/25 02:16:21.651 (5.09s)[0m
+[38;5;9m• [FAILED] [95.207 seconds][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [38;5;9m[1m[It] should be able to run preflightvalidation with no push - signing test[0m [38;5;204m[56329, test_id:56329][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:29[0m
+  Module [38;5;204m[build-sign][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:31[0m
+    [38;5;14m[1mshould be able to run preflightvalidation and push to registry - signing test[0m [38;5;204m[56327, test_id:56327][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:246[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:26[0m
+  Module [38;5;204m[use-dtk][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:28[0m
+    [38;5;14m[1mshould use DTK_AUTO parameter[0m [38;5;204m[54283, test_id:54283][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:77[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:26[0m
+  Module [38;5;204m[use-dtk][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:28[0m
+    [38;5;14m[1mshould be able to modify a kmod in a module[0m [38;5;204m[53466, test_id:53466][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:140[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:26[0m
+  Module [38;5;204m[use-dtk][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:28[0m
+    [38;5;14m[1mshould fail to update an existing module with something that is wrong[0m [38;5;204m[62598, test_id:62598][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:167[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:26[0m
+  Module [38;5;204m[use-dtk][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:28[0m
+    [38;5;14m[1mshould be able to run preflightvalidation with no push to registry[0m [38;5;204m[56330, test_id:56330][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:190[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:26[0m
+  Module [38;5;204m[use-dtk][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:28[0m
+    [38;5;14m[1mshould be able to run preflightvalidation and push to registry - dtk auto test [0m [38;5;204m[56328, test_id:56328][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/use-dtk-auto-test.go:240[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-longrun][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:30[0m
+  Module [38;5;204m[use-rt-kernel][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:32[0m
+    [38;5;14m[1mshould properly build a module on Realtime Kernel[0m [38;5;204m[53656, test_id:53656][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:102[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-longrun][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:30[0m
+  Module [38;5;204m[use-rt-kernel][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:32[0m
+    [38;5;14m[1mshould be able to run preflightvalidation for realtime kernel[0m [38;5;204m[84177, test_id:84177][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/realtime-test.go:207[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:31[0m
+  Module [38;5;204m[tolerations][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:33[0m
+    [38;5;14m[1mshould deploy module with NoSchedule toleration[0m [38;5;204m[79205, test_id:79205][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:172[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:31[0m
+  Module [38;5;204m[tolerations][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:33[0m
+    [38;5;14m[1mshould deploy module with NoExecute toleration[0m [38;5;204m[79206, test_id:79206][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:232[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:31[0m
+  Module [38;5;204m[tolerations][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:33[0m
+    [38;5;14m[1mshould deploy module with device plugin and NoSchedule toleration[0m [38;5;204m[79997, test_id:79997][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:280[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:31[0m
+  Module [38;5;204m[tolerations][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:33[0m
+    [38;5;14m[1mshould deploy module with device plugin and NoExecute toleration[0m [38;5;204m[79208, test_id:79208][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:351[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:31[0m
+  Module [38;5;204m[tolerations][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:33[0m
+    [38;5;14m[1mshould handle taints used by cluster upgrade[0m [38;5;204m[79207, test_id:79207][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/taint-tolerations-test.go:422[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/must-gather.go:18[0m
+  Module [38;5;204m[must-gather][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/must-gather.go:20[0m
+    [38;5;14m[1mCheck must-gather functionality[0m [38;5;204m[53653, test_id:53653][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/must-gather.go:22[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/firmware-test.go:22[0m
+  Module [38;5;204m[firmware][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/firmware-test.go:24[0m
+    [38;5;14m[1mshould properly build a module with firmware support[0m [38;5;204m[56675, test_id:56675][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/firmware-test.go:52[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/intree-replacement-test.go:23[0m
+  Module [38;5;204m[in-tree-replace][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/intree-replacement-test.go:25[0m
+    [38;5;14m[1mshould replace in-tree module[0m [38;5;204m[62745, test_id:62745][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/intree-replacement-test.go:57[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:19[0m
+  Module [38;5;204m[check-install][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:20[0m
+    [38;5;14m[1mOperator should be properly installed[0m [38;5;204m[56674, test_id:56674][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:22[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:19[0m
+  Module [38;5;204m[check-install][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:20[0m
+    [38;5;14m[1mWebhook server should be properly installed[0m [38;5;204m[72719, test_id:72719][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/olm-install-test.go:50[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS [SKIPPED][0m
+KMM [38;5;204m[module, kmm-sanity][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/clamav-test.go:26[0m
+  Operator images [38;5;204m[clamav][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/clamav-test.go:28[0m
+    [38;5;14m[1mshould pass malware testing[0m [38;5;204m[68147, test_id:68147][0m
+    [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/clamav-test.go:62[0m
+[38;5;243m------------------------------[0m
+[0m[1m[AfterSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:94[0m
+  > Enter [1m[AfterSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:94 @ 09/25/25 02:16:21.653[0m
+  [1mSTEP:[0m Cleanup environment after KMM tests execution [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:95 @ 09/25/25 02:16:21.653[0m
+  [1mSTEP:[0m Delete helper deployments [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:98 @ 09/25/25 02:16:21.653[0m
+  [1mSTEP:[0m Delete helper clusterrolebinding [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:115 @ 09/25/25 02:16:21.727[0m
+  [1mSTEP:[0m Delete helper service account [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:123 @ 09/25/25 02:16:21.747[0m
+  < Exit [1m[AfterSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:94 @ 09/25/25 02:16:21.768 (115ms)[0m
+[38;5;10m[AfterSuite] PASSED [0.115 seconds][0m
+[38;5;243m------------------------------[0m
+[0m[1m[ReportAfterSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:128[0m
+  > Enter [1m[ReportAfterSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:128 @ 09/25/25 02:16:21.769[0m
+  < Exit [1m[ReportAfterSuite][0m TOP-LEVEL [38;5;243m- /root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:128 @ 09/25/25 02:16:21.8 (31ms)[0m
+[38;5;10m[ReportAfterSuite] PASSED [0.031 seconds][0m
+[38;5;243m------------------------------[0m
+[0m[1m[ReportAfterSuite] Autogenerated ReportAfterSuite for --junit-report[0m
+[38;5;243mautogenerated by Ginkgo[0m
+  > Enter [1m[ReportAfterSuite][0m TOP-LEVEL [38;5;243m- autogenerated by Ginkgo @ 09/25/25 02:16:21.8[0m
+  < Exit [1m[ReportAfterSuite][0m TOP-LEVEL [38;5;243m- autogenerated by Ginkgo @ 09/25/25 02:16:21.803 (3ms)[0m
+[38;5;10m[ReportAfterSuite] PASSED [0.003 seconds][0m
+[38;5;243m------------------------------[0m
+
+[38;5;9m[1mSummarizing 1 Failure:[0m
+  [38;5;9m[FAIL][0m [0mKMM [38;5;243mModule [38;5;9m[1m[It] should be able to run preflightvalidation with no push - signing test[0m [38;5;204m[module, kmm-sanity, build-sign, 56329, test_id:56329][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:233[0m
+
+[38;5;9m[1mRan 4 of 48 Specs in 200.354 seconds[0m
+[38;5;9m[1mFAIL![0m -- [38;5;10m[1m3 Passed[0m | [38;5;9m[1m1 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m44 Skipped[0m
+--- FAIL: TestModules (200.39s)
+FAIL
+
+Ginkgo ran 1 suite in 3m27.692793386s
+
+Test Suite Failed

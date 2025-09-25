@@ -133,8 +133,11 @@ func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname s
 	timeout time.Duration) error {
 	return wait.PollUntilContextTimeout(
 		context.TODO(), 5*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] Entered PollUntilContextTimeout callback\n")
+
 			pre, err := kmm.PullPreflightValidationOCP(apiClient, preflight,
 				nsname)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] PollUntilContextTimeout returned: pre=%+v, err=%v", pre, err)
 
 			if err != nil {
 				glog.V(kmmparams.KmmLogLevel).Infof("error pulling preflightvalidationocp")
