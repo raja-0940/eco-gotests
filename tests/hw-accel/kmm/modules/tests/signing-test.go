@@ -209,12 +209,16 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			dtkImage := get.PreflightImage(arch)
 
 			By("Create preflightvalidationocp")
+			fmt.Println("[DEBUG] [SIGNING TEST] Creating preflightvalidationocp with PreflightName =", kmmparams.PreflightName, ",", "ModuleName =", moduleName, ",", "Namespace =", kmmparams.ModuleBuildAndSignNamespace)
+			fmt.Println("[DEBUG] [SIGNING TEST] DTKImage =", dtkImage)
+			fmt.Println("[DEBUG] [SIGNING TEST] KernelVersion =", kernelVersion)
 			pre, err := kmm.NewPreflightValidationOCPBuilder(APIClient, kmmparams.PreflightName,
 				kmmparams.ModuleBuildAndSignNamespace).
 				WithKernelVersion(kernelVersion).
 				WithDtkImage(dtkImage).
 				WithPushBuiltImage(false).
 				Create()
+			fmt.Println("[DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre =", pre, ",", "err =", err)
 			Expect(err).ToNot(HaveOccurred(), "error while creating preflight")
 
 			By("Await build pod to complete build")
@@ -222,13 +226,13 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error while building module")
 
 			By("Await preflightvalidationocp checks")
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] calling PreflightStageDone with PreflightName=%s, ModuleName=%s, Namespace=%s\n    ", kmmparams.PreflightName, moduleName, kmmparams.ModuleBuildAndSignNamespace)
+			fmt.Println("[DEBUG] [SIGNING TEST] calling PreflightStageDone with PreflightName =", kmmparams.PreflightName, ",", "ModuleName =", moduleName, ",", "Namespace =", kmmparams.ModuleBuildAndSignNamespace)
 			err = await.PreflightStageDone(APIClient, kmmparams.PreflightName, moduleName,
 				kmmparams.ModuleBuildAndSignNamespace, 3*time.Minute)
 			if err != nil {
-				glog.V(kmmparams.KmmLogLevel).Infof("[DUBUG] PreflightStageDone returned error: %v\n", err)
+				fmt.Println("[DUBUG] [SIGNING TEST] PreflightStageDone returned error: ", err)
 			} else {
-				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] PreflightStageDone completed successfully, err=nil\n")
+				fmt.Println("[DEBUG] [SIGNING TEST] PreflightStageDone completed successfully, err=nil\n")
 			}
 			Expect(err).To(HaveOccurred(), "preflightvalidationocp did not complete")
 

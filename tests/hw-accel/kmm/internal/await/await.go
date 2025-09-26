@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"encoding/json"
 
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/kmm"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/nodes"
@@ -131,25 +132,29 @@ func ModuleObjectDeleted(apiClient *clients.Settings, moduleName, nsName string,
 // PreflightStageDone awaits preflightvalidationocp to be in stage Done.
 func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname string,
 	timeout time.Duration) error {
+	fmt.Println("[DEBUG] [Await] PreflightStageDone returned: preflight=", preflight, ",", "module =", module, ",", "nsname =", nsname)
 	return wait.PollUntilContextTimeout(
 		context.TODO(), 5*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] Entered PollUntilContextTimeout callback\n")
+			fmt.Println("[DEBUG] [Await] Entered PollUntilContextTimeout callback\n")
 
 			pre, err := kmm.PullPreflightValidationOCP(apiClient, preflight,
 				nsname)
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] PollUntilContextTimeout returned: pre=%+v, err=%v", pre, err)
+			fmt.Println("[DEBUG] [Await] PollUntilContextTimeout returned: pre =", pre, ",", "err =", err)
 
 			if err != nil {
 				glog.V(kmmparams.KmmLogLevel).Infof("error pulling preflightvalidationocp")
 			}
 
 			preflightValidationOCP, err := pre.Get()
+			b, _ := json.MarshalIndent(preflightValidationOCP, "", " ")
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] preflightValidationOCP object: %s", string(b))
 			if err != nil {
 				return false, err
 			}
 
 			// Search for the module in the new Modules array structure
 			for _, moduleStatus := range preflightValidationOCP.Status.Modules {
+				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Found moduleStatus: Name=%s, Namespace=%s, Stage=%s", moduleStatus.Name, moduleStatus.Namespace, moduleStatus.VerificationStage)				
 				if moduleStatus.Name == module && moduleStatus.Namespace == nsname {
 					status := moduleStatus.VerificationStage
 					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s", status)
