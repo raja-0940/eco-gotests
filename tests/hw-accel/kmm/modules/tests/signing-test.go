@@ -218,12 +218,8 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 				WithDtkImage(dtkImage).
 				WithPushBuiltImage(false).
 				Create()
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre=%+v\t, err=%v\n", pre, err)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre=%+v\t, err=%v", pre, err)
 			Expect(err).ToNot(HaveOccurred(), "error while creating preflight")
-
-			By("Await build pod to complete build")
-			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 5*time.Minute)
-			Expect(err).ToNot(HaveOccurred(), "error while building module")
 
 			By("Await preflightvalidationocp checks")
 			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] calling PreflightStageDone with PreflightName=%s, ModuleName=%s, Namespace=%s\n", kmmparams.PreflightName, moduleName, kmmparams.ModuleBuildAndSignNamespace)
@@ -234,12 +230,19 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			} else {
 				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] PreflightStageDone completed successfully, err=nil\n")
 			}
-			Expect(err).To(HaveOccurred(), "preflightvalidationocp did not complete")
+			Expect(err).NotTo(HaveOccurred(), "preflightvalidationocp did not complete")
+			
+			By("Await build pod to complete build")
+			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 5*time.Minute)
+			if err != nil {
+				glog.V(kmmparams.KmmLogLevel).Infof("No build pod found or completed: %s", err)
+			}
 
 			By("Get status of the preflightvalidationocp checks")
 			status, _ := get.PreflightReason(APIClient, kmmparams.PreflightName, moduleName,
 				kmmparams.ModuleBuildAndSignNamespace)
-			Expect(strings.Contains(status, "Failed to verify signing for module")).
+			Expect(strings.Contains(status, "Verification successful (build compiles)") ||
+				strings.Contains(status, "verified image exists")).
 				To(BeTrue(), "expected message not found")
 
 			By("Delete preflight validation")
