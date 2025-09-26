@@ -1,0 +1,949 @@
+2025/09/26 01:41:47 maxprocs: Leaving GOMAXPROCS=16: CPU quota undefined
+2025/09/26 01:41:54 Creating new ModulesConfig
+2025/09/26 01:41:54 Creating new GeneralConfig struct
+Running Suite: KMM - /root/eco-gotests/tests/hw-accel/kmm/modules
+[38;5;204m[hw-accel, kmm, module][0m 
+=================================================================
+Random Seed: [1m1758865307[0m
+
+Will run [1m4[0m of [1m48[0m specs
+[38;5;243m------------------------------[0m
+[0m[1m[BeforeSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:44[0m
+  [1mSTEP:[0m Prepare environment for KMM tests execution [38;5;243m@ 09/26/25 01:41:54.789[0m
+  [1mSTEP:[0m Create helper ServiceAccount [38;5;243m@ 09/26/25 01:41:54.789[0m
+  [1mSTEP:[0m Create helper ClusterRoleBinding [38;5;243m@ 09/26/25 01:41:54.836[0m
+  [1mSTEP:[0m Create helper Deployments [38;5;243m@ 09/26/25 01:41:54.848[0m
+I0926 01:41:54.857785  789912 modules_suite_test.go:65] Creating privileged deployment on node 'worker-0'
+I0926 01:41:57.911081  789912 modules_suite_test.go:65] Creating privileged deployment on node 'worker-1'
+I0926 01:42:01.032388  789912 modules_suite_test.go:65] Creating privileged deployment on node 'worker-2'
+[38;5;10m[BeforeSuite] PASSED [9.287 seconds][0m
+[38;5;243m------------------------------[0m
+[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m
+[38;5;243m------------------------------[0m
+[0mKMM [38;5;243mModule [0m[1mshould use build and sign a module[0m [38;5;204m[module, kmm-sanity, build-sign, 56252, test_id:56252][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:69[0m
+  [1mSTEP:[0m Create Namespace [38;5;243m@ 09/26/25 01:42:04.076[0m
+  [1mSTEP:[0m Creating my-signing-key-pub [38;5;243m@ 09/26/25 01:42:04.09[0m
+  [1mSTEP:[0m Creating my-signing-key [38;5;243m@ 09/26/25 01:42:04.141[0m
+  [1mSTEP:[0m Create ConfigMap [38;5;243m@ 09/26/25 01:42:04.174[0m
+  [1mSTEP:[0m Create ServiceAccount [38;5;243m@ 09/26/25 01:42:04.203[0m
+  [1mSTEP:[0m Create ClusterRoleBinding [38;5;243m@ 09/26/25 01:42:04.22[0m
+  [1mSTEP:[0m Create KernelMapping [38;5;243m@ 09/26/25 01:42:04.247[0m
+  [1mSTEP:[0m Create ModuleLoaderContainer [38;5;243m@ 09/26/25 01:42:04.247[0m
+  [1mSTEP:[0m Create Module [38;5;243m@ 09/26/25 01:42:04.247[0m
+  [1mSTEP:[0m Await build pod to complete build [38;5;243m@ 09/26/25 01:42:04.294[0m
+I0926 01:42:09.307918  789912 await.go:42] Build pod '56252-build-g5kd5-build' found
+I0926 01:43:14.306067  789912 await.go:52] BuildPod map[56252:56252-build-g5kd5-build] no longer in namespace
+  [1mSTEP:[0m Await driver container deployment [38;5;243m@ 09/26/25 01:43:14.306[0m
+I0926 01:43:14.323940  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:14.323991  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:14.324036  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:14.324067  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:19.321763  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:19.321808  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:19.321850  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:19.321879  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:24.321623  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:24.321662  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:24.321695  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:24.321713  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:29.351008  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:29.351035  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:29.351056  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:29.351068  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:34.328600  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:34.328628  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:34.328660  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:34.328686  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:39.371041  789912 get.go:30] NumberOfNodesForSelector return 3 nodes
+I0926 01:43:39.371085  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kmm.node.kubernetes.io/56252.56252.ready: kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-0 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:39.371114  789912 await.go:199] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-0
+I0926 01:43:39.371122  789912 await.go:203] Number of nodes: 3, Number of nodes with 'kmm.node.kubernetes.io/56252.56252.ready' label pods: 1
+I0926 01:43:39.371130  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kmm.node.kubernetes.io/56252.56252.ready: kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-1 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:39.371142  789912 await.go:199] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-1
+I0926 01:43:39.371149  789912 await.go:203] Number of nodes: 3, Number of nodes with 'kmm.node.kubernetes.io/56252.56252.ready' label pods: 2
+I0926 01:43:39.371154  789912 await.go:195] map[beta.kubernetes.io/arch:ppc64le beta.kubernetes.io/os:linux kmm.node.kubernetes.io/56252.56252.ready: kubernetes.io/arch:ppc64le kubernetes.io/hostname:worker-2 kubernetes.io/os:linux node-role.kubernetes.io/worker: node.openshift.io/os_id:rhel]
+I0926 01:43:39.371167  789912 await.go:199] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-2
+I0926 01:43:39.371173  789912 await.go:203] Number of nodes: 3, Number of nodes with 'kmm.node.kubernetes.io/56252.56252.ready' label pods: 3
+  [1mSTEP:[0m Check module is loaded on node [38;5;243m@ 09/26/25 01:43:39.371[0m
+I0926 01:43:39.385641  789912 check.go:136] 
+
+PodName: kmm-test-helper-worker-0-7d555dd587-mrv5t
+Command: [lsmod]
+Expect: module_signing
+
+I0926 01:43:39.583670  789912 check.go:146] [lsmod] contents: 
+ 	Module                  Size  Used by
+module_signing        196608  0
+rpcsec_gss_krb5       196608  0
+auth_rpcgss           327680  1 rpcsec_gss_krb5
+nfsv4                1376256  0
+dns_resolver          196608  1 nfsv4
+nfs                   720896  1 nfsv4
+lockd                 327680  1 nfs
+grace                 196608  1 lockd
+fscache               589824  1 nfs
+netfs                 262144  2 fscache,nfs
+rpadlpar_io           262144  0
+rpaphp                196608  1 rpadlpar_io
+xsk_diag              196608  0
+binfmt_misc           262144  1
+nft_reject_inet       196608  48
+nf_reject_ipv6        262144  1 nft_reject_inet
+nft_reject            196608  1 nft_reject_inet
+veth                  262144  0
+nft_nat               196608  2
+nft_fib_inet          196608  1
+nft_fib_ipv4          196608  1 nft_fib_inet
+nft_fib_ipv6          196608  1 nft_fib_inet
+nft_fib               196608  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_chain_nat         196608  5
+geneve                262144  0
+ip6_udp_tunnel        262144  1 geneve
+udp_tunnel            262144  1 geneve
+ipt_REJECT            196608  4
+nf_reject_ipv4        196608  2 nft_reject_inet,ipt_REJECT
+nf_conntrack_netlink   262144  0
+nft_socket            196608  1
+nf_socket_ipv4        196608  1 nft_socket
+nf_socket_ipv6        262144  1 nft_socket
+xt_CT                 196608  4
+xt_conntrack          196608  1
+xt_comment            196608  1
+nft_compat            196608  10
+nft_counter           196608  25
+nf_tables             458752  576 nft_compat,nft_nat,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_counter,nft_chain_nat,nft_socket,nft_reject,nft_fib,nft_fib_inet
+nfnetlink_cttimeout   196608  0
+nfnetlink             196608  6 nft_compat,nfnetlink_cttimeout,nf_conntrack_netlink,nf_tables
+overlay               393216  106
+rfkill                262144  1
+openvswitch           393216  21
+nf_conncount          262144  1 openvswitch
+nf_nat                262144  3 nft_nat,openvswitch,nft_chain_nat
+nf_conntrack          393216  8 xt_conntrack,nf_nat,nfnetlink_cttimeout,nft_nat,openvswitch,nf_conntrack_netlink,xt_CT,nf_conncount
+nf_defrag_ipv6        262144  1 nf_conntrack
+nf_defrag_ipv4        196608  1 nf_conntrack
+psample               262144  1 openvswitch
+ext4                 1310720  1
+mbcache               262144  1 ext4
+jbd2                  393216  1 ext4
+pseries_rng           196608  0
+drm                   917504  0
+ip_tables             262144  0
+drm_panel_orientation_quirks   196608  1 drm
+xfs                  2621440  1
+libcrc32c             196608  5 nf_conntrack,nf_nat,openvswitch,nf_tables,xfs
+sr_mod                196608  0
+cdrom                 262144  1 sr_mod
+sd_mod                196608  2
+nvme_tcp              262144  0
+sg                    262144  0
+nvme_fabrics          262144  1 nvme_tcp
+nvme_keyring          262144  2 nvme_tcp,nvme_fabrics
+nvme_core             327680  2 nvme_tcp,nvme_fabrics
+ibmvfc                262144  2
+nvme_auth             262144  1 nvme_core
+ibmvscsi              196608  0
+scsi_transport_fc     196608  1 ibmvfc
+ibmveth               262144  0
+scsi_transport_srp    262144  1 ibmvscsi
+vmx_crypto            196608  0
+dm_multipath          262144  0
+dm_mirror             196608  0
+dm_region_hash        196608  1 dm_mirror
+dm_log                196608  2 dm_region_hash,dm_mirror
+dm_mod                393216  3 dm_multipath,dm_log,dm_mirror
+rpcrdma               524288  0
+be2iscsi              262144  0
+sunrpc                983040  6 rpcrdma,nfsv4,auth_rpcgss,lockd,rpcsec_gss_krb5,nfs
+bnx2i                 196608  0
+cnic                  262144  1 bnx2i
+uio                   196608  1 cnic
+cxgb4i                196608  0
+rdma_ucm              196608  0
+ib_uverbs             327680  1 rdma_ucm
+ib_srpt               262144  0
+cxgb4                 786432  1 cxgb4i
+ib_isert              196608  0
+iscsi_target_mod      720896  1 ib_isert
+tls                   327680  1 cxgb4
+libcxgbi              262144  1 cxgb4i
+libcxgb               262144  1 libcxgbi
+target_core_mod       655360  3 iscsi_target_mod,ib_srpt,ib_isert
+qla4xxx               524288  0
+iscsi_boot_sysfs      196608  2 be2iscsi,qla4xxx
+iscsi_tcp             262144  0
+ib_iser               196608  0
+libiscsi_tcp          262144  3 libcxgbi,iscsi_tcp,cxgb4i
+libiscsi              262144  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,cxgb4i
+ib_umad               262144  0
+scsi_transport_iscsi   393216  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,libiscsi
+rdma_cm               327680  5 rpcrdma,ib_srpt,ib_iser,ib_isert,rdma_ucm
+ib_ipoib              262144  0
+iw_cm                 262144  1 rdma_cm
+ib_cm                 393216  3 rdma_cm,ib_ipoib,ib_srpt
+ib_core               655360  11 rdma_cm,ib_ipoib,rpcrdma,ib_srpt,iw_cm,ib_iser,ib_umad,ib_isert,rdma_ucm,ib_uverbs,ib_cm
+fuse                  393216  1
+
+I0926 01:43:39.583734  789912 check.go:149] command '[lsmod]' contains 'module_signing' in pod kmm-test-helper-worker-0-7d555dd587-mrv5t
+I0926 01:43:39.583748  789912 check.go:136] 
+
+PodName: kmm-test-helper-worker-1-74bb96b846-wd9c9
+Command: [lsmod]
+Expect: module_signing
+
+I0926 01:43:39.740098  789912 check.go:146] [lsmod] contents: 
+ 	Module                  Size  Used by
+module_signing        196608  0
+rpadlpar_io           262144  0
+rpaphp                196608  1 rpadlpar_io
+xsk_diag              196608  0
+binfmt_misc           262144  1
+rpcsec_gss_krb5       196608  0
+auth_rpcgss           327680  1 rpcsec_gss_krb5
+nfsv4                1376256  1
+dns_resolver          196608  1 nfsv4
+nfs                   720896  2 nfsv4
+lockd                 327680  1 nfs
+grace                 196608  1 lockd
+fscache               589824  1 nfs
+netfs                 262144  2 fscache,nfs
+nft_reject_inet       196608  24
+nf_reject_ipv6        262144  1 nft_reject_inet
+nft_reject            196608  1 nft_reject_inet
+veth                  262144  0
+nft_nat               196608  2
+nft_fib_inet          196608  1
+nft_fib_ipv4          196608  1 nft_fib_inet
+nft_fib_ipv6          196608  1 nft_fib_inet
+nft_fib               196608  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_chain_nat         196608  5
+geneve                262144  0
+ip6_udp_tunnel        262144  1 geneve
+udp_tunnel            262144  1 geneve
+ipt_REJECT            196608  4
+nf_reject_ipv4        196608  2 nft_reject_inet,ipt_REJECT
+nf_conntrack_netlink   262144  0
+nft_socket            196608  1
+nf_socket_ipv4        196608  1 nft_socket
+nf_socket_ipv6        262144  1 nft_socket
+xt_CT                 196608  4
+xt_conntrack          196608  1
+xt_comment            196608  1
+nft_compat            196608  10
+nft_counter           196608  25
+nf_tables             458752  376 nft_compat,nft_nat,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_counter,nft_chain_nat,nft_socket,nft_reject,nft_fib,nft_fib_inet
+nfnetlink_cttimeout   196608  0
+nfnetlink             196608  6 nft_compat,nfnetlink_cttimeout,nf_conntrack_netlink,nf_tables
+overlay               393216  76
+rfkill                262144  1
+openvswitch           393216  14
+nf_conncount          262144  1 openvswitch
+nf_nat                262144  3 nft_nat,openvswitch,nft_chain_nat
+nf_conntrack          393216  8 xt_conntrack,nf_nat,nfnetlink_cttimeout,nft_nat,openvswitch,nf_conntrack_netlink,xt_CT,nf_conncount
+nf_defrag_ipv6        262144  1 nf_conntrack
+nf_defrag_ipv4        196608  1 nf_conntrack
+psample               262144  1 openvswitch
+ext4                 1310720  1
+mbcache               262144  1 ext4
+jbd2                  393216  1 ext4
+pseries_rng           196608  0
+drm                   917504  0
+ip_tables             262144  0
+drm_panel_orientation_quirks   196608  1 drm
+xfs                  2621440  1
+libcrc32c             196608  5 nf_conntrack,nf_nat,openvswitch,nf_tables,xfs
+sr_mod                196608  0
+cdrom                 262144  1 sr_mod
+sd_mod                196608  2
+nvme_tcp              262144  0
+sg                    262144  0
+nvme_fabrics          262144  1 nvme_tcp
+nvme_keyring          262144  2 nvme_tcp,nvme_fabrics
+nvme_core             327680  2 nvme_tcp,nvme_fabrics
+ibmvfc                262144  2
+nvme_auth             262144  1 nvme_core
+ibmvscsi              196608  0
+scsi_transport_fc     196608  1 ibmvfc
+ibmveth               262144  0
+scsi_transport_srp    262144  1 ibmvscsi
+vmx_crypto            196608  0
+dm_multipath          262144  0
+dm_mirror             196608  0
+dm_region_hash        196608  1 dm_mirror
+dm_log                196608  2 dm_region_hash,dm_mirror
+dm_mod                393216  3 dm_multipath,dm_log,dm_mirror
+rpcrdma               524288  0
+be2iscsi              262144  0
+sunrpc                983040  9 rpcrdma,nfsv4,auth_rpcgss,lockd,rpcsec_gss_krb5,nfs
+bnx2i                 196608  0
+cnic                  262144  1 bnx2i
+uio                   196608  1 cnic
+cxgb4i                196608  0
+rdma_ucm              196608  0
+ib_uverbs             327680  1 rdma_ucm
+ib_srpt               262144  0
+cxgb4                 786432  1 cxgb4i
+ib_isert              196608  0
+iscsi_target_mod      720896  1 ib_isert
+tls                   327680  1 cxgb4
+libcxgbi              262144  1 cxgb4i
+libcxgb               262144  1 libcxgbi
+qla4xxx               524288  0
+target_core_mod       655360  3 iscsi_target_mod,ib_srpt,ib_isert
+iscsi_boot_sysfs      196608  2 be2iscsi,qla4xxx
+iscsi_tcp             262144  0
+ib_iser               196608  0
+libiscsi_tcp          262144  3 libcxgbi,iscsi_tcp,cxgb4i
+libiscsi              262144  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,cxgb4i
+scsi_transport_iscsi   393216  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,libiscsi
+ib_umad               262144  0
+rdma_cm               327680  5 rpcrdma,ib_srpt,ib_iser,ib_isert,rdma_ucm
+ib_ipoib              262144  0
+iw_cm                 262144  1 rdma_cm
+ib_cm                 393216  3 rdma_cm,ib_ipoib,ib_srpt
+ib_core               655360  11 rdma_cm,ib_ipoib,rpcrdma,ib_srpt,iw_cm,ib_iser,ib_umad,ib_isert,rdma_ucm,ib_uverbs,ib_cm
+fuse                  393216  1
+
+I0926 01:43:39.740158  789912 check.go:149] command '[lsmod]' contains 'module_signing' in pod kmm-test-helper-worker-1-74bb96b846-wd9c9
+I0926 01:43:39.740173  789912 check.go:136] 
+
+PodName: kmm-test-helper-worker-2-6fb5b46cbf-z5p9k
+Command: [lsmod]
+Expect: module_signing
+
+I0926 01:43:39.945877  789912 check.go:146] [lsmod] contents: 
+ 	Module                  Size  Used by
+module_signing        196608  0
+rpadlpar_io           262144  0
+rpaphp                196608  1 rpadlpar_io
+xsk_diag              196608  0
+binfmt_misc           262144  1
+rpcsec_gss_krb5       196608  0
+auth_rpcgss           327680  1 rpcsec_gss_krb5
+nfsv4                1376256  1
+dns_resolver          196608  1 nfsv4
+nfs                   720896  2 nfsv4
+lockd                 327680  1 nfs
+grace                 196608  1 lockd
+fscache               589824  1 nfs
+netfs                 262144  2 fscache,nfs
+nft_reject_inet       196608  51
+nf_reject_ipv6        262144  1 nft_reject_inet
+nft_reject            196608  1 nft_reject_inet
+veth                  262144  0
+nft_nat               196608  2
+nft_fib_inet          196608  1
+nft_fib_ipv4          196608  1 nft_fib_inet
+nft_fib_ipv6          196608  1 nft_fib_inet
+nft_fib               196608  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_chain_nat         196608  5
+geneve                262144  0
+ip6_udp_tunnel        262144  1 geneve
+udp_tunnel            262144  1 geneve
+ipt_REJECT            196608  4
+nf_reject_ipv4        196608  2 nft_reject_inet,ipt_REJECT
+nf_conntrack_netlink   262144  0
+nft_socket            196608  1
+nf_socket_ipv4        196608  1 nft_socket
+nf_socket_ipv6        262144  1 nft_socket
+xt_CT                 196608  4
+xt_conntrack          196608  1
+xt_comment            196608  1
+nft_compat            196608  10
+nft_counter           196608  25
+nf_tables             458752  601 nft_compat,nft_nat,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_counter,nft_chain_nat,nft_socket,nft_reject,nft_fib,nft_fib_inet
+nfnetlink_cttimeout   196608  0
+nfnetlink             196608  6 nft_compat,nfnetlink_cttimeout,nf_conntrack_netlink,nf_tables
+overlay               393216  109
+rfkill                262144  1
+openvswitch           393216  22
+nf_conncount          262144  1 openvswitch
+nf_nat                262144  3 nft_nat,openvswitch,nft_chain_nat
+nf_conntrack          393216  8 xt_conntrack,nf_nat,nfnetlink_cttimeout,nft_nat,openvswitch,nf_conntrack_netlink,xt_CT,nf_conncount
+nf_defrag_ipv6        262144  1 nf_conntrack
+nf_defrag_ipv4        196608  1 nf_conntrack
+psample               262144  1 openvswitch
+ext4                 1310720  1
+mbcache               262144  1 ext4
+jbd2                  393216  1 ext4
+pseries_rng           196608  0
+drm                   917504  0
+ip_tables             262144  0
+drm_panel_orientation_quirks   196608  1 drm
+xfs                  2621440  1
+libcrc32c             196608  5 nf_conntrack,nf_nat,openvswitch,nf_tables,xfs
+nvme_tcp              262144  0
+nvme_fabrics          262144  1 nvme_tcp
+nvme_keyring          262144  2 nvme_tcp,nvme_fabrics
+nvme_core             327680  2 nvme_tcp,nvme_fabrics
+nvme_auth             262144  1 nvme_core
+sr_mod                196608  0
+cdrom                 262144  1 sr_mod
+sd_mod                196608  2
+sg                    262144  0
+ibmvfc                262144  2
+ibmvscsi              196608  0
+scsi_transport_fc     196608  1 ibmvfc
+ibmveth               262144  0
+scsi_transport_srp    262144  1 ibmvscsi
+vmx_crypto            196608  0
+dm_multipath          262144  0
+dm_mirror             196608  0
+dm_region_hash        196608  1 dm_mirror
+dm_log                196608  2 dm_region_hash,dm_mirror
+dm_mod                393216  3 dm_multipath,dm_log,dm_mirror
+rpcrdma               524288  0
+be2iscsi              262144  0
+sunrpc                983040  9 rpcrdma,nfsv4,auth_rpcgss,lockd,rpcsec_gss_krb5,nfs
+bnx2i                 196608  0
+cnic                  262144  1 bnx2i
+uio                   196608  1 cnic
+cxgb4i                196608  0
+rdma_ucm              196608  0
+ib_uverbs             327680  1 rdma_ucm
+ib_srpt               262144  0
+cxgb4                 786432  1 cxgb4i
+ib_isert              196608  0
+iscsi_target_mod      720896  1 ib_isert
+tls                   327680  2 cxgb4
+libcxgbi              262144  1 cxgb4i
+libcxgb               262144  1 libcxgbi
+target_core_mod       655360  3 iscsi_target_mod,ib_srpt,ib_isert
+qla4xxx               524288  0
+iscsi_boot_sysfs      196608  2 be2iscsi,qla4xxx
+iscsi_tcp             262144  0
+ib_iser               196608  0
+libiscsi_tcp          262144  3 libcxgbi,iscsi_tcp,cxgb4i
+libiscsi              262144  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,cxgb4i
+scsi_transport_iscsi   393216  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,ib_iser,qla4xxx,libiscsi
+ib_umad               262144  0
+rdma_cm               327680  5 rpcrdma,ib_srpt,ib_iser,ib_isert,rdma_ucm
+ib_ipoib              262144  0
+iw_cm                 262144  1 rdma_cm
+ib_cm                 393216  3 rdma_cm,ib_ipoib,ib_srpt
+ib_core               655360  11 rdma_cm,ib_ipoib,rpcrdma,ib_srpt,iw_cm,ib_iser,ib_umad,ib_isert,rdma_ucm,ib_uverbs,ib_cm
+fuse                  393216  1
+
+I0926 01:43:39.945938  789912 check.go:149] command '[lsmod]' contains 'module_signing' in pod kmm-test-helper-worker-2-6fb5b46cbf-z5p9k
+  [1mSTEP:[0m Check module is signed [38;5;243m@ 09/26/25 01:43:39.946[0m
+I0926 01:43:39.959710  789912 get.go:54] Found kernelVersion '5.14.0-570.39.1.el9_6.ppc64le'  on node 'worker-0'
+I0926 01:43:42.268531  789912 check.go:88] 
+
+PodName: image-checker
+
+I0926 01:43:42.356570  789912 check.go:99] [bash -c modinfo /opt/lib/modules/*/module-signing.ko] contents: 
+ 	filename:       /opt/lib/modules/5.14.0-570.39.1.el9_6.ppc64le/module-signing.ko
+version:        0.01
+description:    A simple kernel module for KMM CI
+author:         Quentin Barrand
+license:        GPL
+rhelversion:    9.6
+srcversion:     A8C4E4F4AFC0836605CD915
+depends:        
+name:           module_signing
+vermagic:       5.14.0-570.39.1.el9_6.ppc64le SMP mod_unload modversions mprofile-kernel relocatable 
+sig_id:         PKCS#7
+signer:         cdvtest signing key
+sig_key:        40:CE:99:4C:8F:28:51:CC:88:60:EC:30:7A:AD:2B:72:CF:9F:FF:C6
+sig_hashalgo:   sha256
+signature:      76:AB:82:BB:98:FB:EC:07:DF:79:2A:90:63:AF:DC:3D:BB:1D:BA:EA:
+		C3:A3:40:64:8F:5E:E7:F7:6E:B8:DD:11:C8:65:88:BF:1C:B9:BA:E7:
+		3A:54:55:26:02:11:A2:8F:DB:74:CC:36:A8:7A:9B:87:F4:3E:D2:88:
+		03:BB:D0:E3:63:C5:5C:16:7D:8D:A6:98:2D:7C:93:D0:D3:2F:99:FE:
+		F9:14:BC:0E:3C:DB:5D:1C:6B:3A:93:D7:2C:D6:A9:C2:EE:5C:86:D4:
+		5E:85:C2:1A:D8:F8:83:8B:00:EB:58:0F:19:60:5B:E9:5B:59:76:55:
+		28:8D:0F:25:12:FC:60:81:8E:85:25:1F:CE:A2:BA:89:B8:CD:EE:88:
+		F0:6F:3C:27:2E:97:C1:F2:CB:8D:88:D5:E2:C0:A3:68:D7:DF:70:07:
+		AB:3E:BC:8D:BD:85:E1:26:DC:83:12:78:86:45:12:1F:61:36:75:B4:
+		3A:86:F6:51:0D:2E:61:E2:EF:42:FE:87:17:6E:6F:37:CD:63:44:56:
+		70:9A:92:23:0E:BA:7A:0F:5D:84:66:AB:96:9D:6E:8B:75:1D:3A:ED:
+		30:23:73:9E:4A:49:CE:1F:1A:10:4D:3E:34:B4:E7:0F:1C:DE:3E:49:
+		A3:B9:E2:E6:F1:D6:E4:C4:0B:52:79:13:9F:35:B1:71:66:57:A5:B1:
+		35:55:4B:73:1E:08:05:24:AD:2C:19:41:16:1E:56:D3:CA:18:6D:8B:
+		A6:15:E3:D8:65:0D:81:05:0C:2A:18:47:61:82:91:05:60:40:E7:B4:
+		37:E2:AC:1F:61:78:BF:6D:1A:FA:97:CE:A8:3A:C5:7F:F1:30:6D:CF:
+		56:B5:47:98:7E:05:E7:99:A2:93:3E:9F:AF:3B:EF:41:D7:74:77:6F:
+		18:E0:C8:B5:52:4A:F9:7A:91:A8:C4:85:28:E3:3C:EF:AE:B8:F2:93:
+		91:EE:FB:CC:95:37:A7:B3:5F:C1:4E:AA:7D:D8:EB:47:1D:60:A6:39:
+		48:15:76:15:A1:3B:1E:75:87:7A:3F:56:27:1F:70:9C:03:E4:A8:15:
+		C6:C1:02:9A:FA:B0:25:6E:2B:1B:41:87:BE:7E:11:8D:A5:AE:75:CB:
+		84:C9:12:AD:AA:8F:E0:39:96:C1:93:E6:21:CB:94:15:BC:0D:21:0A:
+		D0:95:E0:30:9F:14:CB:1B:11:26:00:99:A5:68:21:BE:2A:C3:38:76:
+		0D:4A:AB:9B:A1:F5:19:10:C4:89:73:BE:FC:8A:64:41:F5:89:C9:39:
+		09:62:55:5A:6E:B1:DD:C0:28:A8:F7:EF:B7:89:32:5D:9B:F5:8B:4C:
+		69:52:B0:25:B8:B2:89:A9:8F:5B:EA:96
+parm:           myversion:Version string (charp)
+
+I0926 01:43:42.356648  789912 check.go:102] command '[bash -c modinfo /opt/lib/modules/*/module-signing.ko]' output contains 'cdvtest signing key'
+  [1mSTEP:[0m Check label is set on all nodes [38;5;243m@ 09/26/25 01:43:42.356[0m
+I0926 01:43:42.364844  789912 check.go:41] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-0
+I0926 01:43:42.364874  789912 check.go:41] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-1
+I0926 01:43:42.364886  789912 check.go:41] Found label kmm.node.kubernetes.io/56252.56252.ready that contains 56252 on node worker-2
+[38;5;10m• [98.288 seconds][0m
+[38;5;243m------------------------------[0m
+[0mKMM [38;5;243mModule [0m[1mshould generate event about build being created and completed[0m [38;5;204m[module, kmm-sanity, build-sign, 68110, test_id:68110][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:156[0m
+  [1mSTEP:[0m Getting events from module's namespace [38;5;243m@ 09/26/25 01:43:42.365[0m
+I0926 01:43:42.378599  789912 signing-test.go:164] Checking BuildimageCreated is present in events
+I0926 01:43:42.378642  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378653  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378660  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378666  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378672  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378677  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378682  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378687  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378692  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.378697  789912 signing-test.go:166] Checking event: BuildCompleted
+I0926 01:43:42.378702  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378707  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378712  789912 signing-test.go:166] Checking event: Pulling
+I0926 01:43:42.378717  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.378723  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.378728  789912 signing-test.go:166] Checking event: BackOff
+I0926 01:43:42.378734  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.378741  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378746  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378752  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378757  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378762  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378767  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378773  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378778  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378783  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.378788  789912 signing-test.go:166] Checking event: BuildCompleted
+I0926 01:43:42.378793  789912 signing-test.go:166] Checking event: BuildimageCreated
+I0926 01:43:42.378798  789912 signing-test.go:168] Found BuildimageCreated in events
+I0926 01:43:42.378807  789912 signing-test.go:164] Checking BuildStarted is present in events
+I0926 01:43:42.378814  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378821  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378827  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378835  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378841  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378847  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378853  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378858  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378863  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.378868  789912 signing-test.go:168] Found BuildStarted in events
+I0926 01:43:42.378875  789912 signing-test.go:164] Checking BuildCompleted is present in events
+I0926 01:43:42.378883  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378889  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378894  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378900  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378904  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378909  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378914  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378919  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378924  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.378929  789912 signing-test.go:166] Checking event: BuildCompleted
+I0926 01:43:42.378934  789912 signing-test.go:168] Found BuildCompleted in events
+I0926 01:43:42.378942  789912 signing-test.go:164] Checking BuildimageSucceeded is present in events
+I0926 01:43:42.378948  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.378957  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.378962  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378968  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378972  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378977  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.378982  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.378987  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.378992  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.378997  789912 signing-test.go:166] Checking event: BuildCompleted
+I0926 01:43:42.379002  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.379007  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.379012  789912 signing-test.go:166] Checking event: Pulling
+I0926 01:43:42.379020  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.379026  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.379031  789912 signing-test.go:166] Checking event: BackOff
+I0926 01:43:42.379036  789912 signing-test.go:166] Checking event: Failed
+I0926 01:43:42.379041  789912 signing-test.go:166] Checking event: Scheduled
+I0926 01:43:42.379046  789912 signing-test.go:166] Checking event: AddedInterface
+I0926 01:43:42.379051  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.379056  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.379061  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.379066  789912 signing-test.go:166] Checking event: Pulled
+I0926 01:43:42.379071  789912 signing-test.go:166] Checking event: Created
+I0926 01:43:42.379076  789912 signing-test.go:166] Checking event: Started
+I0926 01:43:42.379081  789912 signing-test.go:166] Checking event: BuildStarted
+I0926 01:43:42.379086  789912 signing-test.go:166] Checking event: BuildCompleted
+I0926 01:43:42.379091  789912 signing-test.go:166] Checking event: BuildimageCreated
+I0926 01:43:42.379096  789912 signing-test.go:166] Checking event: BuildimageSucceeded
+I0926 01:43:42.379101  789912 signing-test.go:168] Found BuildimageSucceeded in events
+[38;5;10m• [0.014 seconds][0m
+[38;5;243m------------------------------[0m
+[0mKMM [38;5;243mModule [0m[1mshould generate event about sign being created and completed[0m [38;5;204m[module, kmm-sanity, build-sign, 68108, test_id:68108][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:178[0m
+  [1mSTEP:[0m Getting events from module's namespace [38;5;243m@ 09/26/25 01:43:42.379[0m
+I0926 01:43:42.387917  789912 signing-test.go:186] Checking SignimageCreated is present in events
+I0926 01:43:42.387937  789912 signing-test.go:189] Found SignimageCreated in events
+I0926 01:43:42.387944  789912 signing-test.go:186] Checking BuildStarted is present in events
+I0926 01:43:42.387948  789912 signing-test.go:189] Found BuildStarted in events
+I0926 01:43:42.387954  789912 signing-test.go:186] Checking BuildCompleted is present in events
+I0926 01:43:42.387958  789912 signing-test.go:189] Found BuildCompleted in events
+I0926 01:43:42.387962  789912 signing-test.go:186] Checking BuildimageSucceeded is present in events
+I0926 01:43:42.387967  789912 signing-test.go:189] Found BuildimageSucceeded in events
+[38;5;10m• [0.009 seconds][0m
+[38;5;243m------------------------------[0m
+[0mKMM [38;5;243mModule [0m[1mshould be able to run preflightvalidation with no push - signing test[0m [38;5;204m[module, kmm-sanity, build-sign, 56329, test_id:56329][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198[0m
+  [1mSTEP:[0m Detecting cluster architecture [38;5;243m@ 09/26/25 01:43:42.388[0m
+  [1mSTEP:[0m Get kernel version for preflight [38;5;243m@ 09/26/25 01:43:42.394[0m
+  [1mSTEP:[0m Get the DTK Image for preflight test [38;5;243m@ 09/26/25 01:43:42.394[0m
+  [1mSTEP:[0m Create preflightvalidationocp [38;5;243m@ 09/26/25 01:43:42.394[0m
+I0926 01:43:42.394771  789912 get.go:83] Found label 'kubernetes.io/arch' with label value 'ppc64le' on node 'worker-0'
+I0926 01:43:42.394879  789912 signing-test.go:212] [DEBUG] [SIGNING TEST] Creating preflightvalidationocp with PreflightName=preflight, ModuleName=56252 Namespace=56252
+I0926 01:43:42.394896  789912 signing-test.go:213] [DEBUG] [SIGNING TEST] DTKImage=quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92
+I0926 01:43:42.394908  789912 signing-test.go:214] [DEBUG] [SIGNING TEST] KernelVersion=5.14.0-570.41.1.el9_6.ppc64le
+  [1mSTEP:[0m Await build pod to complete build [38;5;243m@ 09/26/25 01:43:42.422[0m
+I0926 01:43:42.422664  789912 signing-test.go:221] [DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre=&{Definition:0xc0006789a0 Object:0xc0006789a0 apiClient:0xc0009b05a0 errorMsg:}	, err=<nil>
+I0926 01:43:47.431047  789912 await.go:42] Build pod '56252-preflight-build-xcp6h-build' found
+  [1mSTEP:[0m Await preflightvalidationocp checks [38;5;243m@ 09/26/25 01:44:57.432[0m
+I0926 01:44:57.432665  789912 await.go:52] BuildPod map[56252:56252-preflight-build-xcp6h-build] no longer in namespace
+I0926 01:44:57.432759  789912 signing-test.go:229] [DEBUG] [SIGNING TEST] calling PreflightStageDone with PreflightName=preflight, ModuleName=56252, Namespace=56252
+I0926 01:44:57.432770  789912 await.go:135] [DEBUG] [Await] PreflightStageDone returned: preflight=preflight, module=56252, nsname=56252
+I0926 01:44:57.432786  789912 await.go:138] [DEBUG] [Await] Entered PollUntilContextTimeout callback
+I0926 01:44:57.437926  789912 await.go:142] [DEBUG] [Await] PollUntilContextTimeout returned: pre=&{Definition:0xc0009dd4a0 Object:0xc0009dd4a0 apiClient:0xc0009b05a0 errorMsg:}	, err=<nil>
+I0926 01:44:57.442995  789912 await.go:150] [DEBUG] [Await] preflightValidationOCP object: {
+ "metadata": {
+  "name": "preflight",
+  "uid": "57be5fe4-04b2-4136-890f-b11f64e2fc72",
+  "resourceVersion": "1255843",
+  "generation": 1,
+  "creationTimestamp": "2025-09-26T05:43:42Z",
+  "managedFields": [
+   {
+    "manager": "modules.test",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:43:42Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:spec": {
+      ".": {},
+      "f:dtkImage": {},
+      "f:kernelVersion": {},
+      "f:pushBuiltImage": {}
+     }
+    }
+   },
+   {
+    "manager": "manager",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:44:53Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:status": {
+      ".": {},
+      "f:modules": {
+       ".": {},
+       "k:{\"name\":\"56252\",\"namespace\":\"56252\"}": {
+        ".": {},
+        "f:lastTransitionTime": {},
+        "f:name": {},
+        "f:namespace": {},
+        "f:statusReason": {},
+        "f:verificationStage": {},
+        "f:verificationStatus": {}
+       }
+      }
+     }
+    },
+    "subresource": "status"
+   }
+  ]
+ },
+ "spec": {
+  "kernelVersion": "5.14.0-570.41.1.el9_6.ppc64le",
+  "dtkImage": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92",
+  "pushBuiltImage": false
+ },
+ "status": {
+  "modules": [
+   {
+    "verificationStatus": "InProgress",
+    "statusReason": "verification is not finished yet",
+    "verificationStage": "Image",
+    "lastTransitionTime": "2025-09-26T05:44:53Z",
+    "name": "56252",
+    "namespace": "56252"
+   }
+  ]
+ }
+}
+I0926 01:44:57.443016  789912 await.go:157] [DEBUG] [Await] Found moduleStatus: Name=56252, Namespace=56252, Stage=Image
+I0926 01:44:57.443026  789912 await.go:160] Stage: Image
+I0926 01:45:02.433612  789912 await.go:138] [DEBUG] [Await] Entered PollUntilContextTimeout callback
+I0926 01:45:02.446172  789912 await.go:142] [DEBUG] [Await] PollUntilContextTimeout returned: pre=&{Definition:0xc000829ce0 Object:0xc000829ce0 apiClient:0xc0009b05a0 errorMsg:}	, err=<nil>
+I0926 01:45:02.470945  789912 await.go:150] [DEBUG] [Await] preflightValidationOCP object: {
+ "metadata": {
+  "name": "preflight",
+  "uid": "57be5fe4-04b2-4136-890f-b11f64e2fc72",
+  "resourceVersion": "1255843",
+  "generation": 1,
+  "creationTimestamp": "2025-09-26T05:43:42Z",
+  "managedFields": [
+   {
+    "manager": "modules.test",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:43:42Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:spec": {
+      ".": {},
+      "f:dtkImage": {},
+      "f:kernelVersion": {},
+      "f:pushBuiltImage": {}
+     }
+    }
+   },
+   {
+    "manager": "manager",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:44:53Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:status": {
+      ".": {},
+      "f:modules": {
+       ".": {},
+       "k:{\"name\":\"56252\",\"namespace\":\"56252\"}": {
+        ".": {},
+        "f:lastTransitionTime": {},
+        "f:name": {},
+        "f:namespace": {},
+        "f:statusReason": {},
+        "f:verificationStage": {},
+        "f:verificationStatus": {}
+       }
+      }
+     }
+    },
+    "subresource": "status"
+   }
+  ]
+ },
+ "spec": {
+  "kernelVersion": "5.14.0-570.41.1.el9_6.ppc64le",
+  "dtkImage": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92",
+  "pushBuiltImage": false
+ },
+ "status": {
+  "modules": [
+   {
+    "verificationStatus": "InProgress",
+    "statusReason": "verification is not finished yet",
+    "verificationStage": "Image",
+    "lastTransitionTime": "2025-09-26T05:44:53Z",
+    "name": "56252",
+    "namespace": "56252"
+   }
+  ]
+ }
+}
+I0926 01:45:02.470989  789912 await.go:157] [DEBUG] [Await] Found moduleStatus: Name=56252, Namespace=56252, Stage=Image
+I0926 01:45:02.471008  789912 await.go:160] Stage: Image
+I0926 01:45:07.435596  789912 await.go:138] [DEBUG] [Await] Entered PollUntilContextTimeout callback
+I0926 01:45:07.441546  789912 await.go:142] [DEBUG] [Await] PollUntilContextTimeout returned: pre=&{Definition:0xc0007b5080 Object:0xc0007b5080 apiClient:0xc0009b05a0 errorMsg:}	, err=<nil>
+I0926 01:45:07.446697  789912 await.go:150] [DEBUG] [Await] preflightValidationOCP object: {
+ "metadata": {
+  "name": "preflight",
+  "uid": "57be5fe4-04b2-4136-890f-b11f64e2fc72",
+  "resourceVersion": "1255843",
+  "generation": 1,
+  "creationTimestamp": "2025-09-26T05:43:42Z",
+  "managedFields": [
+   {
+    "manager": "modules.test",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:43:42Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:spec": {
+      ".": {},
+      "f:dtkImage": {},
+      "f:kernelVersion": {},
+      "f:pushBuiltImage": {}
+     }
+    }
+   },
+   {
+    "manager": "manager",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:44:53Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:status": {
+      ".": {},
+      "f:modules": {
+       ".": {},
+       "k:{\"name\":\"56252\",\"namespace\":\"56252\"}": {
+        ".": {},
+        "f:lastTransitionTime": {},
+        "f:name": {},
+        "f:namespace": {},
+        "f:statusReason": {},
+        "f:verificationStage": {},
+        "f:verificationStatus": {}
+       }
+      }
+     }
+    },
+    "subresource": "status"
+   }
+  ]
+ },
+ "spec": {
+  "kernelVersion": "5.14.0-570.41.1.el9_6.ppc64le",
+  "dtkImage": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92",
+  "pushBuiltImage": false
+ },
+ "status": {
+  "modules": [
+   {
+    "verificationStatus": "InProgress",
+    "statusReason": "verification is not finished yet",
+    "verificationStage": "Image",
+    "lastTransitionTime": "2025-09-26T05:44:53Z",
+    "name": "56252",
+    "namespace": "56252"
+   }
+  ]
+ }
+}
+I0926 01:45:07.446743  789912 await.go:157] [DEBUG] [Await] Found moduleStatus: Name=56252, Namespace=56252, Stage=Image
+I0926 01:45:07.446762  789912 await.go:160] Stage: Image
+I0926 01:45:12.435531  789912 await.go:138] [DEBUG] [Await] Entered PollUntilContextTimeout callback
+I0926 01:45:12.442187  789912 await.go:142] [DEBUG] [Await] PollUntilContextTimeout returned: pre=&{Definition:0xc0006782c0 Object:0xc0006782c0 apiClient:0xc0009b05a0 errorMsg:}	, err=<nil>
+I0926 01:45:12.448370  789912 await.go:150] [DEBUG] [Await] preflightValidationOCP object: {
+ "metadata": {
+  "name": "preflight",
+  "uid": "57be5fe4-04b2-4136-890f-b11f64e2fc72",
+  "resourceVersion": "1256001",
+  "generation": 1,
+  "creationTimestamp": "2025-09-26T05:43:42Z",
+  "managedFields": [
+   {
+    "manager": "modules.test",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:43:42Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:spec": {
+      ".": {},
+      "f:dtkImage": {},
+      "f:kernelVersion": {},
+      "f:pushBuiltImage": {}
+     }
+    }
+   },
+   {
+    "manager": "manager",
+    "operation": "Update",
+    "apiVersion": "kmm.sigs.x-k8s.io/v1beta2",
+    "time": "2025-09-26T05:45:10Z",
+    "fieldsType": "FieldsV1",
+    "fieldsV1": {
+     "f:status": {
+      ".": {},
+      "f:modules": {
+       ".": {},
+       "k:{\"name\":\"56252\",\"namespace\":\"56252\"}": {
+        ".": {},
+        "f:lastTransitionTime": {},
+        "f:name": {},
+        "f:namespace": {},
+        "f:statusReason": {},
+        "f:verificationStage": {},
+        "f:verificationStatus": {}
+       }
+      }
+     }
+    },
+    "subresource": "status"
+   }
+  ]
+ },
+ "spec": {
+  "kernelVersion": "5.14.0-570.41.1.el9_6.ppc64le",
+  "dtkImage": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92",
+  "pushBuiltImage": false
+ },
+ "status": {
+  "modules": [
+   {
+    "verificationStatus": "Success",
+    "statusReason": "verified image exists",
+    "verificationStage": "Done",
+    "lastTransitionTime": "2025-09-26T05:45:10Z",
+    "name": "56252",
+    "namespace": "56252"
+   }
+  ]
+ }
+}
+I0926 01:45:12.448394  789912 await.go:157] [DEBUG] [Await] Found moduleStatus: Name=56252, Namespace=56252, Stage=Done
+I0926 01:45:12.448404  789912 await.go:160] Stage: Done
+I0926 01:45:12.448423  789912 signing-test.go:235] [DEBUG] [SIGNING TEST] PreflightStageDone completed successfully, err=nil
+  [38;5;9m[FAILED][0m in [It] - /root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:237 [38;5;243m@ 09/26/25 01:45:12.448[0m
+  [1mSTEP:[0m Delete Module [38;5;243m@ 09/26/25 01:45:12.448[0m
+  [1mSTEP:[0m Await module to be deleted [38;5;243m@ 09/26/25 01:45:12.471[0m
+I0926 01:45:17.477157  789912 await.go:125] error while pulling the module; most likely it is deleted
+  [1mSTEP:[0m Delete ClusterRoleBinding [38;5;243m@ 09/26/25 01:45:17.483[0m
+  [1mSTEP:[0m Delete preflightvalidationocp [38;5;243m@ 09/26/25 01:45:17.497[0m
+  [1mSTEP:[0m Delete Namespace [38;5;243m@ 09/26/25 01:45:17.521[0m
+[38;5;9m• [FAILED] [95.158 seconds][0m
+[0mKMM [38;5;243mModule [38;5;9m[1m[It] should be able to run preflightvalidation with no push - signing test[0m [38;5;204m[module, kmm-sanity, build-sign, 56329, test_id:56329][0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:198[0m
+
+  [38;5;9m[FAILED] preflightvalidationocp did not complete
+  Expected an error to have occurred.  Got:
+      <nil>: nil[0m
+  [38;5;9mIn [1m[It][0m[38;5;9m at: [1m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:237[0m [38;5;243m@ 09/26/25 01:45:12.448[0m
+[38;5;243m------------------------------[0m
+[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m[38;5;14mS[0m
+[38;5;243m------------------------------[0m
+[0m[1m[AfterSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:94[0m
+  [1mSTEP:[0m Cleanup environment after KMM tests execution [38;5;243m@ 09/26/25 01:45:17.546[0m
+  [1mSTEP:[0m Delete helper deployments [38;5;243m@ 09/26/25 01:45:17.546[0m
+I0926 01:45:17.546320  789912 modules_suite_test.go:96] Deleting test deployments
+I0926 01:45:17.554409  789912 modules_suite_test.go:106] Deployment: 'kmm-operator-controller'
+I0926 01:45:17.554455  789912 modules_suite_test.go:106] Deployment: 'kmm-operator-webhook'
+I0926 01:45:17.554463  789912 modules_suite_test.go:106] Deployment: 'kmm-test-helper-worker-0'
+I0926 01:45:17.554469  789912 modules_suite_test.go:108] Deleting deployment: 'kmm-test-helper-worker-0'
+I0926 01:45:17.585776  789912 modules_suite_test.go:106] Deployment: 'kmm-test-helper-worker-1'
+I0926 01:45:17.585823  789912 modules_suite_test.go:108] Deleting deployment: 'kmm-test-helper-worker-1'
+I0926 01:45:17.611459  789912 modules_suite_test.go:106] Deployment: 'kmm-test-helper-worker-2'
+I0926 01:45:17.611492  789912 modules_suite_test.go:108] Deleting deployment: 'kmm-test-helper-worker-2'
+  [1mSTEP:[0m Delete helper clusterrolebinding [38;5;243m@ 09/26/25 01:45:17.633[0m
+  [1mSTEP:[0m Delete helper service account [38;5;243m@ 09/26/25 01:45:17.664[0m
+[38;5;10m[AfterSuite] PASSED [0.136 seconds][0m
+[38;5;243m------------------------------[0m
+[0m[1m[ReportAfterSuite] [0m
+[38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/modules_suite_test.go:128[0m
+[38;5;10m[ReportAfterSuite] PASSED [0.055 seconds][0m
+[38;5;243m------------------------------[0m
+[0m[1m[ReportAfterSuite] Autogenerated ReportAfterSuite for --junit-report[0m
+[38;5;243mautogenerated by Ginkgo[0m
+[38;5;10m[ReportAfterSuite] PASSED [0.003 seconds][0m
+[38;5;243m------------------------------[0m
+
+[38;5;9m[1mSummarizing 1 Failure:[0m
+  [38;5;9m[FAIL][0m [0mKMM [38;5;243mModule [38;5;9m[1m[It] should be able to run preflightvalidation with no push - signing test[0m [38;5;204m[module, kmm-sanity, build-sign, 56329, test_id:56329][0m
+  [38;5;243m/root/eco-gotests/tests/hw-accel/kmm/modules/tests/signing-test.go:237[0m
+
+[38;5;9m[1mRan 4 of 48 Specs in 202.894 seconds[0m
+[38;5;9m[1mFAIL![0m -- [38;5;10m[1m3 Passed[0m | [38;5;9m[1m1 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m44 Skipped[0m
+--- FAIL: TestModules (202.95s)
+FAIL
+
+Ginkgo ran 1 suite in 3m30.519890303s
+
+Test Suite Failed

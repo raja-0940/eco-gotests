@@ -209,16 +209,16 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			dtkImage := get.PreflightImage(arch)
 
 			By("Create preflightvalidationocp")
-			fmt.Println("[DEBUG] [SIGNING TEST] Creating preflightvalidationocp with PreflightName =", kmmparams.PreflightName, ",", "ModuleName =", moduleName, ",", "Namespace =", kmmparams.ModuleBuildAndSignNamespace)
-			fmt.Println("[DEBUG] [SIGNING TEST] DTKImage =", dtkImage)
-			fmt.Println("[DEBUG] [SIGNING TEST] KernelVersion =", kernelVersion)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] Creating preflightvalidationocp with PreflightName=%s, ModuleName=%s Namespace=%s\n", kmmparams.PreflightName, moduleName, kmmparams.ModuleBuildAndSignNamespace)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] DTKImage=%s\n", dtkImage)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] KernelVersion=%s\n", kernelVersion)
 			pre, err := kmm.NewPreflightValidationOCPBuilder(APIClient, kmmparams.PreflightName,
 				kmmparams.ModuleBuildAndSignNamespace).
 				WithKernelVersion(kernelVersion).
 				WithDtkImage(dtkImage).
 				WithPushBuiltImage(false).
 				Create()
-			fmt.Println("[DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre =", pre, ",", "err =", err)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] Created preflightvalidationocp with pre=%+v\t, err=%v\n", pre, err)
 			Expect(err).ToNot(HaveOccurred(), "error while creating preflight")
 
 			By("Await build pod to complete build")
@@ -226,13 +226,13 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error while building module")
 
 			By("Await preflightvalidationocp checks")
-			fmt.Println("[DEBUG] [SIGNING TEST] calling PreflightStageDone with PreflightName =", kmmparams.PreflightName, ",", "ModuleName =", moduleName, ",", "Namespace =", kmmparams.ModuleBuildAndSignNamespace)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] calling PreflightStageDone with PreflightName=%s, ModuleName=%s, Namespace=%s\n", kmmparams.PreflightName, moduleName, kmmparams.ModuleBuildAndSignNamespace)
 			err = await.PreflightStageDone(APIClient, kmmparams.PreflightName, moduleName,
 				kmmparams.ModuleBuildAndSignNamespace, 3*time.Minute)
 			if err != nil {
-				fmt.Println("[DUBUG] [SIGNING TEST] PreflightStageDone returned error: ", err)
+				glog.V(kmmparams.KmmLogLevel).Infof("[DUBUG] [SIGNING TEST] PreflightStageDone returned error: %s\n", err)
 			} else {
-				fmt.Println("[DEBUG] [SIGNING TEST] PreflightStageDone completed successfully, err=nil\n")
+				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [SIGNING TEST] PreflightStageDone completed successfully, err=nil\n")
 			}
 			Expect(err).To(HaveOccurred(), "preflightvalidationocp did not complete")
 

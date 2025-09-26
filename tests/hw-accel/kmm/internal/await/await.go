@@ -132,14 +132,14 @@ func ModuleObjectDeleted(apiClient *clients.Settings, moduleName, nsName string,
 // PreflightStageDone awaits preflightvalidationocp to be in stage Done.
 func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname string,
 	timeout time.Duration) error {
-	fmt.Println("[DEBUG] [Await] PreflightStageDone returned: preflight=", preflight, ",", "module =", module, ",", "nsname =", nsname)
+	glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] PreflightStageDone returned: preflight=%s, module=%s, nsname=%s\n", preflight, module, nsname)
 	return wait.PollUntilContextTimeout(
 		context.TODO(), 5*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			fmt.Println("[DEBUG] [Await] Entered PollUntilContextTimeout callback\n")
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Entered PollUntilContextTimeout callback\n")
 
 			pre, err := kmm.PullPreflightValidationOCP(apiClient, preflight,
 				nsname)
-			fmt.Println("[DEBUG] [Await] PollUntilContextTimeout returned: pre =", pre, ",", "err =", err)
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] PollUntilContextTimeout returned: pre=%+v\t, err=%v\n", pre, err)
 
 			if err != nil {
 				glog.V(kmmparams.KmmLogLevel).Infof("error pulling preflightvalidationocp")
@@ -147,23 +147,23 @@ func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname s
 
 			preflightValidationOCP, err := pre.Get()
 			b, _ := json.MarshalIndent(preflightValidationOCP, "", " ")
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] preflightValidationOCP object: %s", string(b))
+			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] preflightValidationOCP object: %s\n", string(b))
 			if err != nil {
 				return false, err
 			}
 
 			// Search for the module in the new Modules array structure
 			for _, moduleStatus := range preflightValidationOCP.Status.Modules {
-				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Found moduleStatus: Name=%s, Namespace=%s, Stage=%s", moduleStatus.Name, moduleStatus.Namespace, moduleStatus.VerificationStage)				
+				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Found moduleStatus: Name=%s, Namespace=%s, Stage=%s\n", moduleStatus.Name, moduleStatus.Namespace, moduleStatus.VerificationStage)				
 				if moduleStatus.Name == module && moduleStatus.Namespace == nsname {
 					status := moduleStatus.VerificationStage
-					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s", status)
+					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s\n", status)
 
 					return status == "Done", nil
 				}
 			}
 
-			glog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status", module)
+			glog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status\n", module)
 
 			return false, nil
 		})
