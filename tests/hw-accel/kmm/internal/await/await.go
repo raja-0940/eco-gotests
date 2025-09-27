@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"encoding/json"
-
+	
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/kmm"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/nodes"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/pod"
@@ -132,29 +131,24 @@ func ModuleObjectDeleted(apiClient *clients.Settings, moduleName, nsName string,
 // PreflightStageDone awaits preflightvalidationocp to be in stage Done.
 func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname string,
 	timeout time.Duration) error {
-	glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] PreflightStageDone returned: preflight=%s, module=%s, nsname=%s\n", preflight, module, nsname)
 	return wait.PollUntilContextTimeout(
 		context.TODO(), 5*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Entered PollUntilContextTimeout callback\n")
-
+			
 			pre, err := kmm.PullPreflightValidationOCP(apiClient, preflight,
 				nsname)
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] PollUntilContextTimeout returned: pre=%+v\t, err=%v\n", pre, err)
-
+			
 			if err != nil {
 				glog.V(kmmparams.KmmLogLevel).Infof("error pulling preflightvalidationocp")
 			}
 
 			preflightValidationOCP, err := pre.Get()
-			b, _ := json.MarshalIndent(preflightValidationOCP, "", " ")
-			glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] preflightValidationOCP object: %s\n", string(b))
+			
 			if err != nil {
 				return false, err
 			}
 
 			// Search for the module in the new Modules array structure
 			for _, moduleStatus := range preflightValidationOCP.Status.Modules {
-				glog.V(kmmparams.KmmLogLevel).Infof("[DEBUG] [Await] Found moduleStatus: Name=%s, Namespace=%s, Stage=%s\n", moduleStatus.Name, moduleStatus.Namespace, moduleStatus.VerificationStage)				
 				if moduleStatus.Name == module && moduleStatus.Namespace == nsname {
 					status := moduleStatus.VerificationStage
 					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s\n", status)
