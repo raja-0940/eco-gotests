@@ -219,7 +219,7 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 
 			By("Await preflightvalidationocp checks")
 			err = await.PreflightStageDone(APIClient, kmmparams.PreflightName, moduleName,
-				kmmparams.ModuleBuildAndSignNamespace, 3*time.Minute)
+				kmmparams.ModuleBuildAndSignNamespace, time.Minute)
 			Expect(err).NotTo(HaveOccurred(), "preflightvalidationocp did not complete")
 			
 			By("Await build pod to complete build")

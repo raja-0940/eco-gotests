@@ -151,13 +151,13 @@ func PreflightStageDone(apiClient *clients.Settings, preflight, module, nsname s
 			for _, moduleStatus := range preflightValidationOCP.Status.Modules {
 				if moduleStatus.Name == module && moduleStatus.Namespace == nsname {
 					status := moduleStatus.VerificationStage
-					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s\n", status)
+					glog.V(kmmparams.KmmLogLevel).Infof("Stage: %s", status)
 
 					return status == "Done", nil
 				}
 			}
 
-			glog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status\n", module)
+			glog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status", module)
 
 			return false, nil
 		})
