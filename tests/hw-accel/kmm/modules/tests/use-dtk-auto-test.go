@@ -237,7 +237,7 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			Expect(err).ToNot(HaveOccurred(), "error deleting preflightvalidation")
 		})
 
-		It("should be able to run preflightvalidation and push to registry", reportxml.ID("56328"), func() {
+		It("should be able to run preflightvalidation and push to registry - D", reportxml.ID("56328"), func() {
 			By("Detecting cluster architecture")
 			arch, err := get.ClusterArchitecture(APIClient, GeneralConfig.WorkerLabelMap)
 			if err != nil {
