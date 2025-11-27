@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/configmap"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/events"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/kmm"
@@ -20,6 +19,7 @@ import (
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/hw-accel/kmm/internal/kmmparams"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/hw-accel/kmm/modules/internal/tsparams"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -39,6 +39,7 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 		filesToSign := []string{fmt.Sprintf("/opt/lib/modules/$KERNEL_FULL_VERSION/%s.ko", kmodName)}
 
 		AfterAll(func() {
+
 			By("Delete Module")
 			_, err := kmm.NewModuleBuilder(APIClient, moduleName, kmmparams.ModuleBuildAndSignNamespace).Delete()
 			Expect(err).ToNot(HaveOccurred(), "error deleting module")
@@ -161,11 +162,11 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			reasonBuildListLength := len(kmmparams.ReasonBuildList)
 			foundEvents := 0
 			for _, item := range kmmparams.ReasonBuildList {
-				glog.V(kmmparams.KmmLogLevel).Infof("Checking %s is present in events", item)
+				klog.V(kmmparams.KmmLogLevel).Infof("Checking %s is present in events", item)
 				for _, event := range eventList {
-					glog.V(kmmparams.KmmLogLevel).Infof("Checking event: %s", event.Object.Reason)
+					klog.V(kmmparams.KmmLogLevel).Infof("Checking event: %s", event.Object.Reason)
 					if event.Object.Reason == item {
-						glog.V(kmmparams.KmmLogLevel).Infof("Found %s in events", item)
+						klog.V(kmmparams.KmmLogLevel).Infof("Found %s in events", item)
 						foundEvents++
 
 						break
@@ -183,10 +184,10 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			reasonSignListLength := len(kmmparams.ReasonSignList)
 			foundEvents := 0
 			for _, item := range kmmparams.ReasonSignList {
-				glog.V(kmmparams.KmmLogLevel).Infof("Checking %s is present in events", item)
+				klog.V(kmmparams.KmmLogLevel).Infof("Checking %s is present in events", item)
 				for _, event := range eventList {
 					if event.Object.Reason == item {
-						glog.V(kmmparams.KmmLogLevel).Infof("Found %s in events", item)
+						klog.V(kmmparams.KmmLogLevel).Infof("Found %s in events", item)
 						foundEvents++
 
 						break
@@ -231,8 +232,13 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			status, _ := get.PreflightReason(APIClient, kmmparams.PreflightName, moduleName,
 				kmmparams.ModuleBuildAndSignNamespace)
 			Expect(strings.Contains(status, "Verification successful (build compiles)") ||
-				strings.Contains(status, "verified image exists")).
+				strings.Contains(status, "verified image does not exist and build/sign failed")).
 				To(BeTrue(), "expected message not found")
+
+			By("Validate imagestream tag is not created in internal registry")
+			err = check.ImageStreamExistsForModule(APIClient, kmmparams.ModuleBuildAndSignNamespace,
+				moduleName, kmodName, kernelVersion)
+			Expect(err).To(HaveOccurred(), "imagestream tag exists while it should not")
 
 			By("Delete preflight validation")
 			_, err = pre.Delete()
@@ -240,6 +246,9 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 		})
 
 		It("should be able to run preflightvalidation and push to registry", reportxml.ID("56327"), func() {
+			By("Await previous preflight to be properly removed")
+			time.Sleep(time.Minute)
+
 			By("Detecting cluster architecture")
 			arch, err := get.ClusterArchitecture(APIClient, GeneralConfig.WorkerLabelMap)
 			if err != nil {
@@ -266,17 +275,13 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 				kmmparams.ModuleBuildAndSignNamespace, 3*time.Minute)
 			Expect(err).NotTo(HaveOccurred(), "preflightvalidationocp did not complete")
 
-			By("Await build pod to complete build (if any)")
-			err = await.BuildPodCompleted(APIClient, kmmparams.ModuleBuildAndSignNamespace, 5*time.Minute)
-			Expect(err).ToNot(HaveOccurred(), "No build pod found or completed")
-
 			By("Get status of the preflightvalidationocp checks")
 			status, _ := get.PreflightReason(APIClient, kmmparams.PreflightName, moduleName,
 				kmmparams.ModuleBuildAndSignNamespace)
 			Expect(strings.Contains(status, "verified image exists")).
 				To(BeTrue(), "expected message not found")
 
-			By("Validate imagestream if using internal registry")
+			By("Validate new imagestream is created in internal registry")
 			err = check.ImageStreamExistsForModule(APIClient, kmmparams.ModuleBuildAndSignNamespace,
 				moduleName, kmodName, kernelVersion)
 			Expect(err).ToNot(HaveOccurred(), "imagestream validation failed")

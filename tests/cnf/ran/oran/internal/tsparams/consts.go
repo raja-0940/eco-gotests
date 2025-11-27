@@ -1,6 +1,6 @@
 package tsparams
 
-import "github.com/golang/glog"
+import "k8s.io/klog/v2"
 
 const (
 	// LabelSuite is the label applied to all cases in the oran suite.
@@ -14,14 +14,14 @@ const (
 	LabelPostProvision = "post-provision"
 	// LabelTemplateInventory is the label applied to just the template inventory test cases.
 	LabelTemplateInventory = "template-inventory"
+	// LabelAlarms is the label applied to just the alarms test cases.
+	LabelAlarms = "alarms"
 )
 
 const (
 	// ClusterTemplateName is the name without the version of the ClusterTemplate used in the ORAN tests. It is also
 	// the namespace the ClusterTemplates are in.
 	ClusterTemplateName = "sno-ran-du"
-	// HardwareManagerNamespace is the namespace that HardwareManagers and their secrets use.
-	HardwareManagerNamespace = "oran-hwmgr-plugin"
 	// O2IMSNamespace is the namespace used by the oran-o2ims operator.
 	O2IMSNamespace = "oran-o2ims"
 	// ExtraManifestsName is the name of the generated extra manifests ConfigMap in the cluster Namespace.
@@ -84,5 +84,13 @@ const (
 	TestBase64Credential = "d3JvbmdwYXNzd29yZA=="
 )
 
+const (
+	// SubscriberSubdomain is the subdomain for the subscriber deployment. It is expected that there exists a *.apps
+	// route for this subdomain.
+	SubscriberSubdomain = "oran-subscriber"
+	// SubscriberNamespace is the namespace for the subscriber deployment.
+	SubscriberNamespace = "oran-subscriber"
+)
+
 // LogLevel is the glog verbosity level to use for logs in this suite or its helpers.
-const LogLevel glog.Level = 80
+const LogLevel klog.Level = 80

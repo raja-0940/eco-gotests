@@ -26,7 +26,6 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 
 		var nSpace = kmmparams.MultipleModuleTestNamespace
 		kmodName := "multiplemodules"
-		buildArgValue := fmt.Sprintf("%s.o", kmodName)
 		serviceAccountName := "multiple-sa"
 
 		BeforeAll(func() {
@@ -49,6 +48,13 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 			err = namespace.NewBuilder(APIClient, nSpace).Delete()
 			Expect(err).ToNot(HaveOccurred(), "error deleting test namespace")
 
+			svcAccount := serviceaccount.NewBuilder(APIClient, serviceAccountName, nSpace)
+			svcAccount.Exists()
+
+			By("Delete clusterrolebinding")
+			crb := define.ModuleCRB(*svcAccount, kmodName)
+			err = crb.Delete()
+			Expect(err).ToNot(HaveOccurred(), "error deleting clusterrolebinding ")
 		})
 
 		Context("Modprobe", Label("multiple"), func() {
@@ -74,18 +80,18 @@ var _ = Describe("KMM", Ordered, Label(kmmparams.LabelSuite, kmmparams.LabelSani
 
 				By("Create KernelMapping")
 				image := fmt.Sprintf("%s/%s/%s:$KERNEL_FULL_VERSION",
-					tsparams.LocalImageRegistry, nSpace, "multiplemodules")
+					tsparams.LocalImageRegistry, nSpace, kmodName)
 				kernelMapping, err := kmm.NewRegExKernelMappingBuilder("^.+$").
 					WithContainerImage(image).
-					WithBuildArg(kmmparams.BuildArgName, buildArgValue).
 					WithBuildDockerCfgFile(dockerFileConfigMap.Object.Name).
 					BuildKernelMappingConfig()
 				Expect(err).ToNot(HaveOccurred(), "error creating kernel mapping")
 
 				By("Create moduleLoader container")
 				moduleLoader, err := kmm.NewModLoaderContainerBuilder(kmodName).
-					WithModprobeSpec("", "", nil, nil, nil, []string{"multiplemodules", "kmm-ci-a"}).
+					WithModprobeSpec("", "", nil, nil, nil, []string{kmodName, "kmm-ci-a"}).
 					WithKernelMapping(kernelMapping).
+					WithImagePullPolicy("Always").
 					BuildModuleLoaderContainerCfg()
 				Expect(err).ToNot(HaveOccurred(), "error creating moduleloadercontainer")
 

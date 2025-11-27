@@ -8,7 +8,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/image/v5/pkg/sysregistriesv2"
-	"github.com/golang/glog"
 	"github.com/openshift-kni/lifecycle-agent/lca-cli/seedclusterinfo"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
@@ -16,6 +15,7 @@ import (
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/internal/cluster"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -112,7 +112,6 @@ func GetContent(apiClient *clients.Settings, seedImageLocation string) (*SeedIma
 			apiClient, fmt.Sprintf("sudo tar xzf %s/etc.tgz -O etc/mco/proxy.env", mountedFilePath), metav1.ListOptions{
 				FieldSelector: fmt.Sprintf("metadata.name=%s", seedNode),
 			})
-
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +140,6 @@ func GetContent(apiClient *clients.Settings, seedImageLocation string) (*SeedIma
 		mirrorConfigOutput, err := cluster.ExecCmdWithStdout(
 			apiClient, fmt.Sprintf("sudo tar xzf %s/etc.tgz -O etc/containers/registries.conf",
 				mountedFilePath), metav1.ListOptions{FieldSelector: fmt.Sprintf("metadata.name=%s", seedNode)})
-
 		if err != nil {
 			return nil, err
 		}
@@ -225,7 +223,6 @@ func pullAndMountImage(apiClient *clients.Settings, node, pullCommand, image str
 		apiClient, fmt.Sprintf("%s %s", pullCommand, image), metav1.ListOptions{
 			FieldSelector: fmt.Sprintf("metadata.name=%s", node),
 		})
-
 	if err != nil {
 		return "", nil, err
 	}
@@ -234,7 +231,6 @@ func pullAndMountImage(apiClient *clients.Settings, node, pullCommand, image str
 		apiClient, fmt.Sprintf("sudo podman image mount %s", image), metav1.ListOptions{
 			FieldSelector: fmt.Sprintf("metadata.name=%s", node),
 		})
-
 	if err != nil {
 		return "", nil, err
 	}
@@ -246,9 +242,8 @@ func pullAndMountImage(apiClient *clients.Settings, node, pullCommand, image str
 			apiClient, fmt.Sprintf("sudo podman image unmount %s", image), metav1.ListOptions{
 				FieldSelector: fmt.Sprintf("metadata.name=%s", node),
 			})
-
 		if err != nil {
-			glog.V(100).Info("Error occurred while unmounting image")
+			klog.V(100).Info("Error occurred while unmounting image")
 		}
 	}, nil
 }

@@ -1,18 +1,18 @@
 package olm
 
 import (
-	"context"
 	"fmt"
 
 	operatorsV1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/internal/logging"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/golang/glog"
-	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 // InstallPlanBuilder provides a struct for installplan object from the cluster and an installplan definition.
@@ -30,17 +30,17 @@ type InstallPlanBuilder struct {
 
 // NewInstallPlanBuilder creates new instance of InstallPlanBuilder.
 func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *InstallPlanBuilder {
-	glog.V(100).Infof("Initializing new %s installplan structure", name)
+	klog.V(100).Infof("Initializing new %s installplan structure", name)
 
 	if apiClient == nil {
-		glog.V(100).Infof("The apiClient cannot be nil")
+		klog.V(100).Info("The apiClient cannot be nil")
 
 		return nil
 	}
 
 	err := apiClient.AttachScheme(operatorsV1alpha1.AddToScheme)
 	if err != nil {
-		glog.V(100).Infof("Failed to add operatorsV1alpha1 scheme to client schemes")
+		klog.V(100).Info("Failed to add operatorsV1alpha1 scheme to client schemes")
 
 		return nil
 	}
@@ -56,7 +56,7 @@ func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *In
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the installplan is empty")
+		klog.V(100).Info("The name of the installplan is empty")
 
 		builder.errorMsg = "installplan 'name' cannot be empty"
 
@@ -64,7 +64,7 @@ func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *In
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The nsname of the installplan is empty")
+		klog.V(100).Info("The nsname of the installplan is empty")
 
 		builder.errorMsg = "installplan 'nsname' cannot be empty"
 
@@ -76,17 +76,17 @@ func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *In
 
 // PullInstallPlan loads existing InstallPlan from cluster into the InstallPlanBuilder struct.
 func PullInstallPlan(apiClient *clients.Settings, name, nsName string) (*InstallPlanBuilder, error) {
-	glog.V(100).Infof("Pulling existing InstallPlan %s from cluster in namespace %s", name, nsName)
+	klog.V(100).Infof("Pulling existing InstallPlan %s from cluster in namespace %s", name, nsName)
 
 	if apiClient == nil {
-		glog.V(100).Infof("The apiClient cannot be nil")
+		klog.V(100).Info("The apiClient cannot be nil")
 
 		return nil, fmt.Errorf("installPlan 'apiClient' cannot be empty")
 	}
 
 	err := apiClient.AttachScheme(operatorsV1alpha1.AddToScheme)
 	if err != nil {
-		glog.V(100).Infof("Failed to add operatorsV1alpha1 scheme to client schemes")
+		klog.V(100).Info("Failed to add operatorsV1alpha1 scheme to client schemes")
 
 		return nil, err
 	}
@@ -102,13 +102,13 @@ func PullInstallPlan(apiClient *clients.Settings, name, nsName string) (*Install
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the InstallPlan is empty")
+		klog.V(100).Info("The name of the InstallPlan is empty")
 
 		return nil, fmt.Errorf("installPlan 'name' cannot be empty")
 	}
 
 	if nsName == "" {
-		glog.V(100).Infof("The namespace of the InstallPlan is empty")
+		klog.V(100).Info("The namespace of the InstallPlan is empty")
 
 		return nil, fmt.Errorf("installPlan 'nsName' cannot be empty")
 	}
@@ -129,17 +129,17 @@ func (builder *InstallPlanBuilder) Get() (*operatorsV1alpha1.InstallPlan, error)
 		return nil, err
 	}
 
-	glog.V(100).Infof(
+	klog.V(100).Infof(
 		"Collecting InstallPlan object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	installPlan := &operatorsV1alpha1.InstallPlan{}
 
-	err := builder.apiClient.Get(context.TODO(),
+	err := builder.apiClient.Get(logging.DiscardContext(),
 		runtimeClient.ObjectKey{Name: builder.Definition.Name, Namespace: builder.Definition.Namespace},
 		installPlan)
 	if err != nil {
-		glog.V(100).Infof(
+		klog.V(100).Infof(
 			"InstallPlan object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 
@@ -155,14 +155,14 @@ func (builder *InstallPlanBuilder) Create() (*InstallPlanBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the InstallPlan %s in namespace %s",
+	klog.V(100).Infof("Creating the InstallPlan %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if builder.Exists() {
 		return builder, nil
 	}
 
-	err := builder.apiClient.Create(context.TODO(), builder.Definition)
+	err := builder.apiClient.Create(logging.DiscardContext(), builder.Definition)
 	if err != nil {
 		return builder, err
 	}
@@ -178,7 +178,7 @@ func (builder *InstallPlanBuilder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if installplan %s exists in namespace %s",
+	klog.V(100).Infof("Checking if installplan %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -194,11 +194,11 @@ func (builder *InstallPlanBuilder) Delete() error {
 		return err
 	}
 
-	glog.V(100).Infof("Deleting installplan %s in namespace %s", builder.Definition.Name,
+	klog.V(100).Infof("Deleting installplan %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("InstallPlan object %s does not exist in namespace %s",
+		klog.V(100).Infof("InstallPlan object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.Object = nil
@@ -206,7 +206,7 @@ func (builder *InstallPlanBuilder) Delete() error {
 		return nil
 	}
 
-	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
+	err := builder.apiClient.Delete(logging.DiscardContext(), builder.Definition)
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func (builder *InstallPlanBuilder) Update() (*InstallPlanBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating installPlan %s in namespace %s",
+	klog.V(100).Infof("Updating installPlan %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
@@ -230,7 +230,7 @@ func (builder *InstallPlanBuilder) Update() (*InstallPlanBuilder, error) {
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
-	err := builder.apiClient.Update(context.TODO(), builder.Definition)
+	err := builder.apiClient.Update(logging.DiscardContext(), builder.Definition)
 	if err == nil {
 		builder.Object = builder.Definition
 	}
@@ -244,25 +244,25 @@ func (builder *InstallPlanBuilder) validate() (bool, error) {
 	resourceCRD := "installplan"
 
 	if builder == nil {
-		glog.V(100).Infof("The builder %s is uninitialized", resourceCRD)
+		klog.V(100).Infof("The builder %s is uninitialized", resourceCRD)
 
 		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
+		klog.V(100).Infof("The %s is undefined", resourceCRD)
 
 		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
-		glog.V(100).Infof("The builder %s apiclient is nil", resourceCRD)
+		klog.V(100).Infof("The builder %s apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The builder %s has error message: %w", resourceCRD, builder.errorMsg)
+		klog.V(100).Infof("The builder %s has error message: %v", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf("%s", builder.errorMsg)
 	}

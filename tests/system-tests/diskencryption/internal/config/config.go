@@ -7,12 +7,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/bmc"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/diskencryption/tsparams"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/internal/systemtestsconfig"
 	"gopkg.in/yaml.v2"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -42,8 +42,8 @@ func NewDiskEncryptionConfig() *DiskEncrptionConfig {
 	_, filename, _, _ := runtime.Caller(0)
 	baseDir := filepath.Dir(filename)
 	confFile := filepath.Join(baseDir, PathToDefaultDiskEncryptionParamsFile)
-	err := readFile(&diskEncryptionConf, confFile)
 
+	err := readFile(&diskEncryptionConf, confFile)
 	if err != nil {
 		log.Printf("Error reading config file %s", confFile)
 
@@ -51,7 +51,6 @@ func NewDiskEncryptionConfig() *DiskEncrptionConfig {
 	}
 
 	err = readEnv(&diskEncryptionConf)
-
 	if err != nil {
 		log.Print("Error reading environment variables")
 
@@ -63,7 +62,7 @@ func NewDiskEncryptionConfig() *DiskEncrptionConfig {
 		diskEncryptionConf.BMCPassword != "" {
 		bmcHost := diskEncryptionConf.BMCHosts[0]
 		if len(diskEncryptionConf.BMCHosts) > 1 {
-			glog.V(tsparams.LogLevel).Infof("Found more than one BMC host, using the first one: %s", bmcHost)
+			klog.V(tsparams.LogLevel).Infof("Found more than one BMC host, using the first one: %s", bmcHost)
 		}
 
 		diskEncryptionConf.Spoke1BMC = bmc.New(bmcHost).
@@ -86,8 +85,8 @@ func readFile(diskEncrptionConfig *DiskEncrptionConfig, cfgFile string) error {
 	}()
 
 	decoder := yaml.NewDecoder(openedCfgFile)
-	err = decoder.Decode(&diskEncrptionConfig)
 
+	err = decoder.Decode(&diskEncrptionConfig)
 	if err != nil {
 		return err
 	}

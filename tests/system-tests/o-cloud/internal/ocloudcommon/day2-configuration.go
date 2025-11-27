@@ -12,10 +12,9 @@ import (
 
 	"sync"
 
-	"github.com/golang/glog"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog/v2"
 
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/olm"
@@ -33,6 +32,9 @@ import (
 func VerifySuccessfulOperatorUpgrade(ctx SpecContext) {
 	downgradeOperatorImages()
 
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke1, OCloudConfig.InventoryPoolNamespace)
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke2, OCloudConfig.InventoryPoolNamespace)
+
 	provisioningRequest1 := VerifyProvisionSnoCluster(
 		OCloudConfig.TemplateName,
 		OCloudConfig.TemplateVersionDay2,
@@ -49,25 +51,28 @@ func VerifySuccessfulOperatorUpgrade(ctx SpecContext) {
 		ocloudparams.PolicyTemplateParameters,
 		ocloudparams.ClusterInstanceParameters2)
 
-	node1, nodePool1, namespace1, clusterInstance1 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest1.Object.Name, OCloudConfig.ClusterName1, ctx)
-	node2, nodePool2, namespace2, clusterInstance2 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest2.Object.Name, OCloudConfig.ClusterName2, ctx)
+	VerifyOcloudCRsExist(provisioningRequest1)
+	nsname1 := provisioningRequest1.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance1 := VerifyClusterInstanceCompleted(provisioningRequest1, ctx)
 
-	VerifyAllPoliciesInNamespaceAreCompliant(namespace1.Object.Name, ctx, nil, nil)
-	VerifyAllPoliciesInNamespaceAreCompliant(namespace2.Object.Name, ctx, nil, nil)
+	VerifyOcloudCRsExist(provisioningRequest2)
+	nsname2 := provisioningRequest2.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance2 := VerifyClusterInstanceCompleted(provisioningRequest2, ctx)
+
+	VerifyAllPoliciesInNamespaceAreCompliant(nsname1, ctx, nil, nil)
+	VerifyAllPoliciesInNamespaceAreCompliant(nsname2, ctx, nil, nil)
 
 	provisioningRequest1, err := oran.PullPR(HubAPIClient, provisioningRequest1.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
 
 	sno1ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName1)
 	sno2ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName2)
@@ -88,20 +93,20 @@ func VerifySuccessfulOperatorUpgrade(ctx SpecContext) {
 
 	wg1.Wait()
 
-	VerifyAllPoliciesInNamespaceAreCompliant(namespace1.Object.Name, ctx, nil, nil)
-	VerifyAllPoliciesInNamespaceAreCompliant(namespace2.Object.Name, ctx, nil, nil)
+	VerifyAllPoliciesInNamespaceAreCompliant(nsname1, ctx, nil, nil)
+	VerifyAllPoliciesInNamespaceAreCompliant(nsname2, ctx, nil, nil)
 
 	provisioningRequest1, err = oran.PullPR(HubAPIClient, provisioningRequest1.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
 
 	newPTPVersionSno1 := getPtpOperatorVersionInSno(sno1ApiClient)
 	newPTPVersionSno2 := getPtpOperatorVersionInSno(sno2ApiClient)
@@ -121,8 +126,8 @@ func VerifySuccessfulOperatorUpgrade(ctx SpecContext) {
 
 	wg2.Add(2)
 
-	go DeprovisionAiSnoCluster(provisioningRequest1, namespace1, clusterInstance1, node1, nodePool1, ctx, &wg2)
-	go DeprovisionAiSnoCluster(provisioningRequest2, namespace2, clusterInstance2, node2, nodePool2, ctx, &wg2)
+	go DeprovisionAiSnoCluster(provisioningRequest1, clusterInstance1, ctx, &wg2)
+	go DeprovisionAiSnoCluster(provisioningRequest2, clusterInstance2, ctx, &wg2)
 
 	wg2.Wait()
 }
@@ -133,6 +138,9 @@ func VerifySuccessfulOperatorUpgrade(ctx SpecContext) {
 //nolint:funlen
 func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 	downgradeOperatorImages()
+
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke1, OCloudConfig.InventoryPoolNamespace)
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke2, OCloudConfig.InventoryPoolNamespace)
 
 	provisioningRequest1 := VerifyProvisionSnoCluster(
 		OCloudConfig.TemplateName,
@@ -150,10 +158,13 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 		ocloudparams.PolicyTemplateParameters,
 		ocloudparams.ClusterInstanceParameters2)
 
-	node1, nodePool1, namespace1, clusterInstance1 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest1.Object.Name, OCloudConfig.ClusterName1, ctx)
-	node2, nodePool2, namespace2, clusterInstance2 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest2.Object.Name, OCloudConfig.ClusterName2, ctx)
+	VerifyOcloudCRsExist(provisioningRequest1)
+	nsname1 := provisioningRequest1.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance1 := VerifyClusterInstanceCompleted(provisioningRequest1, ctx)
+
+	VerifyOcloudCRsExist(provisioningRequest2)
+	nsname2 := provisioningRequest2.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance2 := VerifyClusterInstanceCompleted(provisioningRequest2, ctx)
 
 	var wg1 sync.WaitGroup
 
@@ -161,8 +172,8 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 
 	wg1.Add(2)
 
-	go VerifyAllPoliciesInNamespaceAreCompliant(namespace1.Object.Name, ctx, &wg1, &mu1)
-	go VerifyAllPoliciesInNamespaceAreCompliant(namespace2.Object.Name, ctx, &wg1, &mu1)
+	go VerifyAllPoliciesInNamespaceAreCompliant(nsname1, ctx, &wg1, &mu1)
+	go VerifyAllPoliciesInNamespaceAreCompliant(nsname2, ctx, &wg1, &mu1)
 
 	wg1.Wait()
 
@@ -170,13 +181,13 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
 
 	sno1ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName1)
 	sno2ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName2)
@@ -189,23 +200,15 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 
 	upgradeOperatorImages()
 
-	modifyDeploymentResources(
+	modifyPTPDeploymentResources(
 		sno1ApiClient,
-		ocloudparams.PtpOperatorSubscriptionName,
-		ocloudparams.PtpNamespace,
-		ocloudparams.PtpDeploymentName,
-		ocloudparams.PtpContainerName,
 		ocloudparams.PtpCPURequest,
 		ocloudparams.PtpMemoryRequest,
 		ocloudparams.PtpCPULimit,
 		ocloudparams.PtpMemoryLimit)
 
-	modifyDeploymentResources(
+	modifyPTPDeploymentResources(
 		sno2ApiClient,
-		ocloudparams.PtpOperatorSubscriptionName,
-		ocloudparams.PtpNamespace,
-		ocloudparams.PtpDeploymentName,
-		ocloudparams.PtpContainerName,
 		ocloudparams.PtpCPURequest,
 		ocloudparams.PtpMemoryRequest,
 		ocloudparams.PtpCPULimit,
@@ -226,13 +229,13 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestTimeout(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is timeout", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is timeout", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestTimeout(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is timeout", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is timeout", provisioningRequest2.Object.Name)
 
 	newPTPVersionSno1 := getPtpOperatorVersionInSno(sno1ApiClient)
 	newPTPVersionSno2 := getPtpOperatorVersionInSno(sno2ApiClient)
@@ -252,8 +255,8 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 
 	wg3.Add(2)
 
-	go DeprovisionAiSnoCluster(provisioningRequest1, namespace1, clusterInstance1, node1, nodePool1, ctx, &wg3)
-	go DeprovisionAiSnoCluster(provisioningRequest2, namespace2, clusterInstance2, node2, nodePool2, ctx, &wg3)
+	go DeprovisionAiSnoCluster(provisioningRequest1, clusterInstance1, ctx, &wg3)
+	go DeprovisionAiSnoCluster(provisioningRequest2, clusterInstance2, ctx, &wg3)
 
 	wg3.Wait()
 }
@@ -264,6 +267,9 @@ func VerifyFailedOperatorUpgradeAllSnos(ctx SpecContext) {
 //nolint:funlen
 func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 	downgradeOperatorImages()
+
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke1, OCloudConfig.InventoryPoolNamespace)
+	VerifyBmhIsAvailable(OCloudConfig.BmhSpoke2, OCloudConfig.InventoryPoolNamespace)
 
 	provisioningRequest1 := VerifyProvisionSnoCluster(
 		OCloudConfig.TemplateName,
@@ -281,10 +287,13 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 		ocloudparams.PolicyTemplateParameters,
 		ocloudparams.ClusterInstanceParameters2)
 
-	node1, nodePool1, namespace1, clusterInstance1 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest1.Object.Name, OCloudConfig.ClusterName1, ctx)
-	node2, nodePool2, namespace2, clusterInstance2 := VerifyAndRetrieveAssociatedCRsForAI(
-		provisioningRequest2.Object.Name, OCloudConfig.ClusterName2, ctx)
+	VerifyOcloudCRsExist(provisioningRequest1)
+	nsname1 := provisioningRequest1.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance1 := VerifyClusterInstanceCompleted(provisioningRequest1, ctx)
+
+	VerifyOcloudCRsExist(provisioningRequest2)
+	nsname2 := provisioningRequest2.Object.Status.Extensions.ClusterDetails.Name
+	clusterInstance2 := VerifyClusterInstanceCompleted(provisioningRequest2, ctx)
 
 	var wg1 sync.WaitGroup
 
@@ -292,8 +301,8 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 
 	wg1.Add(2)
 
-	go VerifyAllPoliciesInNamespaceAreCompliant(namespace1.Object.Name, ctx, &wg1, &mu1)
-	go VerifyAllPoliciesInNamespaceAreCompliant(namespace2.Object.Name, ctx, &wg1, &mu1)
+	go VerifyAllPoliciesInNamespaceAreCompliant(nsname1, ctx, &wg1, &mu1)
+	go VerifyAllPoliciesInNamespaceAreCompliant(nsname2, ctx, &wg1, &mu1)
 
 	wg1.Wait()
 
@@ -301,13 +310,13 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
 
 	sno1ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName1)
 	sno2ApiClient := CreateSnoAPIClient(OCloudConfig.ClusterName2)
@@ -320,12 +329,8 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 
 	upgradeOperatorImages()
 
-	modifyDeploymentResources(
+	modifyPTPDeploymentResources(
 		sno1ApiClient,
-		ocloudparams.PtpOperatorSubscriptionName,
-		ocloudparams.PtpNamespace,
-		ocloudparams.PtpDeploymentName,
-		ocloudparams.PtpContainerName,
 		ocloudparams.PtpCPURequest,
 		ocloudparams.PtpMemoryRequest,
 		ocloudparams.PtpCPULimit,
@@ -342,19 +347,19 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 
 	wg2.Wait()
 
-	VerifyAllPoliciesInNamespaceAreCompliant(namespace2.Object.Name, ctx, nil, nil)
+	VerifyAllPoliciesInNamespaceAreCompliant(nsname2, ctx, nil, nil)
 
 	provisioningRequest1, err = oran.PullPR(HubAPIClient, provisioningRequest1.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest1.Object.Name))
 
 	VerifyProvisioningRequestTimeout(provisioningRequest1)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s timedout", provisioningRequest1.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s timedout", provisioningRequest1.Object.Name)
 
 	provisioningRequest2, err = oran.PullPR(HubAPIClient, provisioningRequest2.Object.Name)
 	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to retrieve PR %s", provisioningRequest2.Object.Name))
 
 	VerifyProvisioningRequestIsFulfilled(provisioningRequest2)
-	glog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
+	klog.V(ocloudparams.OCloudLogLevel).Infof("Provisioning request %s is fulfilled", provisioningRequest2.Object.Name)
 
 	newPTPVersionSno1 := getPtpOperatorVersionInSno(sno1ApiClient)
 	newPTPVersionSno2 := getPtpOperatorVersionInSno(sno2ApiClient)
@@ -374,8 +379,8 @@ func VerifyFailedOperatorUpgradeSubsetSnos(ctx SpecContext) {
 
 	wg4.Add(2)
 
-	go DeprovisionAiSnoCluster(provisioningRequest1, namespace1, clusterInstance1, node1, nodePool1, ctx, &wg4)
-	go DeprovisionAiSnoCluster(provisioningRequest2, namespace2, clusterInstance2, node2, nodePool2, ctx, &wg4)
+	go DeprovisionAiSnoCluster(provisioningRequest1, clusterInstance1, ctx, &wg4)
+	go DeprovisionAiSnoCluster(provisioningRequest2, clusterInstance2, ctx, &wg4)
 
 	wg4.Wait()
 }
@@ -396,18 +401,18 @@ func getPtpOperatorVersionInSno(apiClient *clients.Settings) version.OperatorVer
 	return csvObj.Object.Spec.Version
 }
 
-// modifyDeploymentResources modifies the cpu and memory resources available for a given container, in a given
-// deployment in a given subscription.
-func modifyDeploymentResources(
+// modifyPTPDeploymentResources modifies the cpu and memory resources available for the PTP deployment.
+func modifyPTPDeploymentResources(
 	apiClient *clients.Settings,
-	subscriptionName string,
-	nsname string,
-	deploymentName string,
-	containerName string,
 	cpuRequest string,
 	memoryRequest string,
 	cpuLimit string,
 	memoryLimit string) {
+	subscriptionName := ocloudparams.PtpOperatorSubscriptionName
+	nsname := ocloudparams.PtpNamespace
+	containerName := ocloudparams.PtpContainerName
+	deploymentName := ocloudparams.PtpDeploymentName
+
 	csvName, err := csv.GetCurrentCSVNameFromSubscription(apiClient, subscriptionName, nsname)
 	if err != nil {
 		Skip(fmt.Sprintf("csv %s not found in namespace %s", csvName, nsname))

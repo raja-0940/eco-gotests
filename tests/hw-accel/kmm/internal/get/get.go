@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/hashicorp/go-version"
 
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
@@ -15,19 +14,19 @@ import (
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/hw-accel/kmm/internal/kmmparams"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 )
 
 // NumberOfNodesForSelector returns the number or worker nodes.
 func NumberOfNodesForSelector(apiClient *clients.Settings, selector map[string]string) (int, error) {
 	nodeBuilder, err := nodes.List(apiClient, metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
-
 	if err != nil {
 		fmt.Println("could not discover number of nodes")
 
 		return 0, err
 	}
 
-	glog.V(kmmparams.KmmLogLevel).Infof("NumberOfNodesForSelector return %v nodes", len(nodeBuilder))
+	klog.V(kmmparams.KmmLogLevel).Infof("NumberOfNodesForSelector return %v nodes", len(nodeBuilder))
 
 	return len(nodeBuilder), nil
 }
@@ -43,7 +42,7 @@ func ClusterArchitecture(apiClient *clients.Settings, nodeSelector map[string]st
 func KernelFullVersion(apiClient *clients.Settings, nodeSelector map[string]string) (string, error) {
 	nodeBuilder, err := nodes.List(apiClient, metav1.ListOptions{LabelSelector: labels.Set(nodeSelector).String()})
 	if err != nil {
-		glog.V(kmmparams.KmmLogLevel).Infof("could not discover %v nodes", nodeSelector)
+		klog.V(kmmparams.KmmLogLevel).Infof("could not discover %v nodes", nodeSelector)
 
 		return "", err
 	}
@@ -51,7 +50,7 @@ func KernelFullVersion(apiClient *clients.Settings, nodeSelector map[string]stri
 	for _, node := range nodeBuilder {
 		kernelVersion := node.Object.Status.NodeInfo.KernelVersion
 
-		glog.V(kmmparams.KmmLogLevel).Infof("Found kernelVersion '%v'  on node '%v'",
+		klog.V(kmmparams.KmmLogLevel).Infof("Found kernelVersion '%v'  on node '%v'",
 			kernelVersion, node.Object.Name)
 
 		return kernelVersion, nil
@@ -71,7 +70,7 @@ func getLabelFromNodeSelector(
 	// Check if at least one node matching the nodeSelector has the specific nodeLabel label set to true
 	// For example, look in all the worker nodes for specific label
 	if err != nil {
-		glog.V(kmmparams.KmmLogLevel).Infof("could not discover %v nodes", nodeSelector)
+		klog.V(kmmparams.KmmLogLevel).Infof("could not discover %v nodes", nodeSelector)
 
 		return "", err
 	}
@@ -80,7 +79,7 @@ func getLabelFromNodeSelector(
 		labelValue, ok := node.Object.Labels[nodeLabel]
 
 		if ok {
-			glog.V(kmmparams.KmmLogLevel).Infof("Found label '%v' with label value '%v' on node '%v'",
+			klog.V(kmmparams.KmmLogLevel).Infof("Found label '%v' with label value '%v' on node '%v'",
 				nodeLabel, labelValue, node.Object.Name)
 
 			return labelValue, nil
@@ -98,20 +97,19 @@ func MachineConfigPoolName(apiClient *clients.Settings) string {
 		apiClient,
 		metav1.ListOptions{LabelSelector: labels.Set(map[string]string{"kubernetes.io": ""}).String()},
 	)
-
 	if err != nil {
-		glog.V(kmmparams.KmmLogLevel).Infof("could not discover nodes")
+		klog.V(kmmparams.KmmLogLevel).Infof("could not discover nodes")
 
 		return ""
 	}
 
 	if len(nodeBuilder) == 1 {
-		glog.V(kmmparams.KmmLogLevel).Infof("Using 'master' as mcp")
+		klog.V(kmmparams.KmmLogLevel).Infof("Using 'master' as mcp")
 
 		return "master"
 	}
 
-	glog.V(kmmparams.KmmLogLevel).Infof("Using 'worker' as mcp")
+	klog.V(kmmparams.KmmLogLevel).Infof("Using 'worker' as mcp")
 
 	return "worker"
 }
@@ -119,9 +117,8 @@ func MachineConfigPoolName(apiClient *clients.Settings) string {
 // SigningData returns struct used for creating secrets for module signing.
 func SigningData(key string, value string) map[string][]byte {
 	val, err := base64.StdEncoding.DecodeString(value)
-
 	if err != nil {
-		glog.V(kmmparams.KmmLogLevel).Infof("Error decoding signing key")
+		klog.V(kmmparams.KmmLogLevel).Infof("Error decoding signing key")
 	}
 
 	secretContents := map[string][]byte{key: val}
@@ -134,6 +131,10 @@ func PreflightImage(arch string) string {
 	// Use specific DTK images with SHA for KMM 2.4 compatibility
 	if arch == "arm64" || arch == "aarch64" {
 		return kmmparams.PreflightDTKImageARM64
+	}
+
+	if arch == "s390x" {
+		return kmmparams.PreflightDTKImageS390X
 	}
 
 	if arch == "ppc64le" {
@@ -154,6 +155,14 @@ func PreflightKernel(arch string, realtime bool) string {
 		return kmmparams.KernelForDTKArm64
 	}
 
+	if arch == "s390x" {
+		if realtime {
+			return kmmparams.KernelForDTKS390xRealtime
+		}
+
+		return kmmparams.KernelForDTKS390x
+	}
+
 	if arch == "ppc64le" {
 		if realtime {
 			return kmmparams.KernelForDTKPpc64leRealtime
@@ -172,7 +181,7 @@ func PreflightKernel(arch string, realtime bool) string {
 // ModuleLoadedMessage returns message for a module loaded event.
 func ModuleLoadedMessage(module, nsname string) string {
 	message := fmt.Sprintf("Module %s/%s loaded into the kernel", nsname, module)
-	glog.V(kmmparams.KmmLogLevel).Infof("Return: '%s'", message)
+	klog.V(kmmparams.KmmLogLevel).Infof("Return: '%s'", message)
 
 	return message
 }
@@ -193,13 +202,13 @@ func PreflightReason(apiClient *clients.Settings, preflight, module, nsname stri
 	for _, moduleStatus := range preflightValidationOCP.Status.Modules {
 		if moduleStatus.Name == module && moduleStatus.Namespace == nsname {
 			reason := moduleStatus.StatusReason
-			glog.V(kmmparams.KmmLogLevel).Infof("VerificationStatus: %s", reason)
+			klog.V(kmmparams.KmmLogLevel).Infof("VerificationStatus: %s", reason)
 
 			return reason, nil
 		}
 	}
 
-	glog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status", module)
+	klog.V(kmmparams.KmmLogLevel).Infof("module %s not found in preflight validation status", module)
 
 	return "", fmt.Errorf("module %s not found in namespace %s", module, nsname)
 }
@@ -207,7 +216,7 @@ func PreflightReason(apiClient *clients.Settings, preflight, module, nsname stri
 // ModuleUnloadedMessage returns message for a module unloaded event.
 func ModuleUnloadedMessage(module, nsname string) string {
 	message := fmt.Sprintf("Module %s/%s unloaded from the kernel", nsname, module)
-	glog.V(kmmparams.KmmLogLevel).Infof("Return: '%s'", message)
+	klog.V(kmmparams.KmmLogLevel).Infof("Return: '%s'", message)
 
 	return message
 }
@@ -225,18 +234,16 @@ func KmmHubOperatorVersion(apiClient *clients.Settings) (ver *version.Version, e
 // DTKImage returns the DockerImage of the drivertoolkit imagestream.
 func DTKImage(apiClient *clients.Settings) (dtkImage string, err error) {
 	dtkIS, err := imagestream.Pull(apiClient, kmmparams.DTKImageStream, kmmparams.DTKImageStreamNamespace)
-
 	if err != nil {
 		return "", err
 	}
 
 	dtkImage, err = dtkIS.GetDockerImage("latest")
-
 	if err != nil {
 		return "", err
 	}
 
-	glog.V(kmmparams.KmmLogLevel).Infof("DTK Image: %s", dtkImage)
+	klog.V(kmmparams.KmmLogLevel).Infof("DTK Image: %s", dtkImage)
 
 	return dtkImage, nil
 }
@@ -244,13 +251,12 @@ func DTKImage(apiClient *clients.Settings) (dtkImage string, err error) {
 func operatorVersion(apiClient *clients.Settings, namePattern, namespace string) (ver *version.Version, err error) {
 	csv, err := olm.ListClusterServiceVersionWithNamePattern(apiClient, namePattern,
 		namespace)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, c := range csv {
-		glog.V(kmmparams.KmmLogLevel).Infof("CSV: %s, Version: %s, Status: %s",
+		klog.V(kmmparams.KmmLogLevel).Infof("CSV: %s, Version: %s, Status: %s",
 			c.Object.Spec.DisplayName, c.Object.Spec.Version, c.Object.Status.Phase)
 
 		csvVersion, _ := version.NewVersion(c.Object.Spec.Version.String())

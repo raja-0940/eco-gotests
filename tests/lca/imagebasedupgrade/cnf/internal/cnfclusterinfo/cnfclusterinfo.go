@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/deployment"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/nodes"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/olm"
@@ -14,6 +13,7 @@ import (
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/internal/cluster"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/lca/imagebasedupgrade/cnf/internal/cnfinittools"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/lca/imagebasedupgrade/cnf/internal/cnfparams"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/strings/slices"
 )
 
@@ -63,25 +63,22 @@ type ClusterStruct struct {
 //nolint:funlen
 func (upgradeVar *ClusterStruct) SaveClusterInfo() error {
 	clusterVersion, err := cluster.GetOCPClusterVersion(cnfinittools.TargetSNOAPIClient)
-
 	if err != nil {
-		glog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve cluster version")
+		klog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve cluster version")
 
 		return err
 	}
 
 	targetSnoClusterName, err := cluster.GetOCPClusterName(cnfinittools.TargetSNOAPIClient)
-
 	if err != nil {
-		glog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve target sno cluster name")
+		klog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve target sno cluster name")
 
 		return err
 	}
 
 	csvList, err := olm.ListClusterServiceVersionInAllNamespaces(cnfinittools.TargetSNOAPIClient)
-
 	if err != nil {
-		glog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve csv list")
+		klog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve csv list")
 
 		return err
 	}
@@ -99,9 +96,8 @@ func (upgradeVar *ClusterStruct) SaveClusterInfo() error {
 	}
 
 	node, err := nodes.List(cnfinittools.TargetSNOAPIClient)
-
 	if err != nil {
-		glog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve node list")
+		klog.V(cnfparams.CNFLogLevel).Infof("Could not retrieve node list")
 
 		return err
 	}
@@ -183,8 +179,8 @@ func (upgradeVar *ClusterStruct) getWorkloadInfo() error {
 	}
 
 	cmd := []string{"bash", "-c", "md5sum " + cnfinittools.CNFConfig.IbuWorkloadPVFilePath + " ||true"}
-	getDigest, err := workloadPod.ExecCommand(cmd)
 
+	getDigest, err := workloadPod.ExecCommand(cmd)
 	if err != nil {
 		return err
 	}

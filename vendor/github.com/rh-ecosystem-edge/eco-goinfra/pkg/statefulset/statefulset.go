@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/internal/logging"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 // Builder provides struct for statefulset object containing connection to the cluster and the statefulset definitions.
@@ -38,7 +39,7 @@ func NewBuilder(
 	nsname string,
 	labels map[string]string,
 	containerSpec *corev1.Container) *Builder {
-	glog.V(100).Infof(
+	klog.V(100).Infof(
 		"Initializing new statefulset structure with the following params: "+
 			"name: %s, namespace: %s, labels: %s, containerSpec %v",
 		name, nsname, labels, containerSpec)
@@ -66,7 +67,7 @@ func NewBuilder(
 	builder.WithAdditionalContainerSpecs([]corev1.Container{*containerSpec})
 
 	if name == "" {
-		glog.V(100).Infof("The name of the statefulset is empty")
+		klog.V(100).Info("The name of the statefulset is empty")
 
 		builder.errorMsg = "statefulset 'name' cannot be empty"
 
@@ -74,7 +75,7 @@ func NewBuilder(
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the statefulset is empty")
+		klog.V(100).Info("The namespace of the statefulset is empty")
 
 		builder.errorMsg = "statefulset 'namespace' cannot be empty"
 
@@ -82,7 +83,7 @@ func NewBuilder(
 	}
 
 	if labels == nil {
-		glog.V(100).Infof("There are no labels for the statefulset")
+		klog.V(100).Info("There are no labels for the statefulset")
 
 		builder.errorMsg = "statefulset 'labels' cannot be empty"
 
@@ -98,11 +99,11 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []corev1.Container) *
 		return builder
 	}
 
-	glog.V(100).Infof("Appending a list of container specs %v to statefulset %s in namespace %s",
+	klog.V(100).Infof("Appending a list of container specs %v to statefulset %s in namespace %s",
 		specs, builder.Definition.Name, builder.Definition.Namespace)
 
 	if specs == nil {
-		glog.V(100).Infof("The container specs are empty")
+		klog.V(100).Info("The container specs are empty")
 
 		builder.errorMsg = "cannot accept nil or empty list as container specs"
 
@@ -126,13 +127,13 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 		return builder
 	}
 
-	glog.V(100).Infof("Setting StatefulSet additional options")
+	klog.V(100).Info("Setting StatefulSet additional options")
 
 	for _, option := range options {
 		if option != nil {
 			builder, err := option(builder)
 			if err != nil {
-				glog.V(100).Infof("Error occurred in mutation function")
+				klog.V(100).Info("Error occurred in mutation function")
 
 				builder.errorMsg = err.Error()
 
@@ -147,16 +148,16 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 // WithPodAnnotations sets annotations on the pod template for pods managed by the statefulset.
 func (builder *Builder) WithPodAnnotations(annotations map[string]string) *Builder {
 	if valid, _ := builder.validate(); !valid {
-		glog.V(100).Infof("Failed to validate StatefulSet builder")
+		klog.V(100).Info("Failed to validate StatefulSet builder")
 
 		return builder
 	}
 
-	glog.V(100).Infof("Setting pod annotations %v for statefulset %s in namespace %s",
+	klog.V(100).Infof("Setting pod annotations %v for statefulset %s in namespace %s",
 		annotations, builder.Definition.Name, builder.Definition.Namespace)
 
 	if len(annotations) == 0 {
-		glog.V(100).Infof("The pod annotations are empty")
+		klog.V(100).Info("The pod annotations are empty")
 
 		builder.errorMsg = "cannot accept nil or empty annotations"
 
@@ -176,7 +177,7 @@ func (builder *Builder) WithPodAnnotations(annotations map[string]string) *Build
 
 // Pull loads an existing statefulset into Builder struct.
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
-	glog.V(100).Infof("Pulling existing statefulset name: %s under namespace: %s", name, nsname)
+	klog.V(100).Infof("Pulling existing statefulset name: %s under namespace: %s", name, nsname)
 
 	builder := Builder{
 		apiClient: apiClient,
@@ -215,12 +216,12 @@ func (builder *Builder) Create() (*Builder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
+	klog.V(100).Infof("Creating statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
 		builder.Object, err = builder.apiClient.StatefulSets(builder.Definition.Namespace).Create(
-			context.TODO(), builder.Definition, metav1.CreateOptions{})
+			logging.DiscardContext(), builder.Definition, metav1.CreateOptions{})
 	}
 
 	return builder, err
@@ -232,13 +233,13 @@ func (builder *Builder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if statefulset %s exists in namespace %s",
+	klog.V(100).Infof("Checking if statefulset %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 
 	builder.Object, err = builder.apiClient.StatefulSets(builder.Definition.Namespace).Get(
-		context.TODO(), builder.Definition.Name, metav1.GetOptions{})
+		logging.DiscardContext(), builder.Definition.Name, metav1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
 }
@@ -249,10 +250,10 @@ func (builder *Builder) Delete() error {
 		return err
 	}
 
-	glog.V(100).Infof("Deleting statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
+	klog.V(100).Infof("Deleting statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("Statefulset %s cannot be deleted because it does not exist", builder.Definition.Name)
+		klog.V(100).Infof("Statefulset %s cannot be deleted because it does not exist", builder.Definition.Name)
 
 		builder.Object = nil
 
@@ -260,7 +261,7 @@ func (builder *Builder) Delete() error {
 	}
 
 	err := builder.apiClient.StatefulSets(builder.Definition.Namespace).Delete(
-		context.TODO(), builder.Definition.Name, metav1.DeleteOptions{})
+		logging.DiscardContext(), builder.Definition.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -276,7 +277,7 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 		return false
 	}
 
-	glog.V(100).Infof("Running periodic check until statefulset %s in namespace %s is ready",
+	klog.V(100).Infof("Running periodic check until statefulset %s in namespace %s is ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
@@ -288,7 +289,7 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 			var err error
 
 			builder.Object, err = builder.apiClient.StatefulSets(builder.Definition.Namespace).Get(
-				context.TODO(), builder.Definition.Name, metav1.GetOptions{})
+				logging.DiscardContext(), builder.Definition.Name, metav1.GetOptions{})
 			if err != nil {
 				return false, err
 			}
@@ -314,25 +315,25 @@ func (builder *Builder) validate() (bool, error) {
 	resourceCRD := "StatefulSet"
 
 	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+		klog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
 
 		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
+		klog.V(100).Infof("The %s is undefined", resourceCRD)
 
 		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+		klog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+		klog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf("%s", builder.errorMsg)
 	}

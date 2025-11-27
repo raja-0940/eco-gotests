@@ -9,12 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/strings/slices"
 
 	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
@@ -113,7 +112,7 @@ var _ = Describe(
 			Expect(err).NotTo(HaveOccurred(), "error retrieveing the X.Y version of the cluster before upgrade")
 
 			if findInstalledCSV("kernel-module-management") {
-				glog.V(mgmtparams.MGMTLogLevel).Infof("KMM was installed")
+				klog.V(mgmtparams.MGMTLogLevel).Infof("KMM was installed")
 
 				By("Create namespace definition for KMM module")
 				kmmNamespace := namespace.NewBuilder(APIClient, kmmModuleNamespaceName)
@@ -588,9 +587,20 @@ var _ = Describe(
 			By("Validate Service Network is in a dual stack deployment with primary IPv4")
 
 			if validateDualStackDeploymentPrimaryIPv4() {
-				glog.V(mgmtparams.MGMTLogLevel).Infof("Cluster is a dual stack deployment with primary IPv4")
+				klog.V(mgmtparams.MGMTLogLevel).Infof("Cluster is a dual stack deployment with primary IPv4")
 			} else {
 				Skip("Cluster is not a dual stack deployment with primary IPv4")
+			}
+		})
+
+		It("detects dual-stack service network with primary IPv6", reportxml.ID("85484"), func() {
+
+			By("Validate Service Network is in a dual stack deployment with primary IPv6")
+
+			if validateDualStackDeploymentPrimaryIPv6() {
+				klog.V(mgmtparams.MGMTLogLevel).Infof("Cluster is a dual stack deployment with primary IPv6")
+			} else {
+				Skip("Cluster is not a dual stack deployment with primary IPv6")
 			}
 		})
 
@@ -811,14 +821,14 @@ func updateIBUWithCustomCatalogSources(imagebasedupgrade *lca.ImageBasedUpgradeB
 	}
 }
 
-func validateDualStackDeploymentPrimaryIPv4() bool {
+func getFirstServiceNetworkIP() net.IP {
 	By("Get OCP cluster network config")
 
 	clusterNetworkConfigObj, err := cluster.GetOCPNetworkConfig(APIClient)
 	Expect(err).NotTo(HaveOccurred(), "error getting OCP cluster network config")
 
 	if !validateDualStackDeployment(clusterNetworkConfigObj) {
-		return false
+		return nil
 	}
 
 	firstServiceNetwork := clusterNetworkConfigObj.Object.Spec.ServiceNetwork[0]
@@ -829,11 +839,31 @@ func validateDualStackDeploymentPrimaryIPv4() bool {
 		ipAddress, _, err := net.ParseCIDR(firstServiceNetwork)
 		Expect(err).NotTo(HaveOccurred(), "error parsing CIDR")
 
-		if ipAddress.To4() != nil {
-			glog.V(mgmtparams.MGMTLogLevel).Infof("Valid IPv4 CIDR: %s", firstServiceNetwork)
+		return ipAddress
+	}
 
-			return true
-		}
+	return nil
+}
+
+func validateDualStackDeploymentPrimaryIPv6() bool {
+	ipAddress := getFirstServiceNetworkIP()
+
+	if ipAddress != nil && ipAddress.To4() == nil {
+		klog.V(mgmtparams.MGMTLogLevel).Infof("The IP is a valid IPv6 address: %s", ipAddress)
+
+		return true
+	}
+
+	return false
+}
+
+func validateDualStackDeploymentPrimaryIPv4() bool {
+	ipAddress := getFirstServiceNetworkIP()
+
+	if ipAddress != nil && ipAddress.To4() != nil {
+		klog.V(mgmtparams.MGMTLogLevel).Infof("The IP is a valid IPv4 address: %s", ipAddress)
+
+		return true
 	}
 
 	return false
@@ -844,7 +874,7 @@ func validateDualStackDeployment(clusterNetworkConfigObj *network.ConfigBuilder)
 	ipv6Network := false
 
 	for _, serviceNetwork := range clusterNetworkConfigObj.Object.Spec.ServiceNetwork {
-		glog.V(mgmtparams.MGMTLogLevel).Infof("Service Network: %s", serviceNetwork)
+		klog.V(mgmtparams.MGMTLogLevel).Infof("Service Network: %s", serviceNetwork)
 
 		By("Validate Service Network entry is a CIDR")
 
@@ -854,15 +884,15 @@ func validateDualStackDeployment(clusterNetworkConfigObj *network.ConfigBuilder)
 
 			switch {
 			case ipAddress.To4() != nil:
-				glog.V(mgmtparams.MGMTLogLevel).Infof("Valid IPv4 CIDR: %s", serviceNetwork)
+				klog.V(mgmtparams.MGMTLogLevel).Infof("Valid IPv4 CIDR: %s", serviceNetwork)
 
 				ipv4Network = true
-			case ipAddress.To16() != nil:
-				glog.V(mgmtparams.MGMTLogLevel).Infof("Valid IPv6 CIDR: %s", serviceNetwork)
+			case ipAddress.To4() == nil:
+				klog.V(mgmtparams.MGMTLogLevel).Infof("Valid IPv6 CIDR: %s", serviceNetwork)
 
 				ipv6Network = true
 			default:
-				glog.V(2).Infof("Unknown IP family for CIDR: %s", serviceNetwork)
+				klog.V(2).Infof("Unknown IP family for CIDR: %s", serviceNetwork)
 			}
 
 			if ipv4Network && ipv6Network {

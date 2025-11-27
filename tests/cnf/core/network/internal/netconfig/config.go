@@ -26,7 +26,7 @@ type NetworkConfig struct {
 	CnfNetTestContainer            string `yaml:"cnf_net_test_container" envconfig:"ECO_CNF_CORE_NET_TEST_CONTAINER"`
 	DpdkTestContainer              string `yaml:"dpdk_test_container" envconfig:"ECO_CNF_CORE_NET_DPDK_TEST_CONTAINER"`
 	MlbOperatorNamespace           string `yaml:"metal_lb_operator_namespace" envconfig:"ECO_CNF_CORE_NET_MLB_OPERATOR_NAMESPACE"` //nolint:lll
-	Frrk8sNamespace                string `yaml:"frr-k8s_namespace" envconfig:"ECO_CNF_CORE_NET_FRR-K8S_NAMESPACE"`
+	Frrk8sNamespace                string `yaml:"frr-k8s_namespace" envconfig:"ECO_CNF_CORE_NET_FRR_K8S_NAMESPACE"`
 	PFStatusRelayOperatorNamespace string `yaml:"pf_status_relay_operator_namespace" envconfig:"ECO_CNF_CORE_NET_PF_STATUS_RELAY_OPERATOR_NAMESPACE"` //nolint:lll
 	CnfMcpLabel                    string `yaml:"cnf_mcp_label" envconfig:"ECO_CNF_CORE_NET_CNF_MCP_LABEL"`
 	MultusNamesapce                string `yaml:"multus_namespace" envconfig:"ECO_CNF_CORE_NET_MULTUS_NAMESPACE"`
@@ -53,13 +53,14 @@ func NewNetConfig() *NetworkConfig {
 	log.Print("Creating new NetworkConfig struct")
 
 	var netConf NetworkConfig
+
 	netConf.CoreConfig = coreconfig.NewCoreConfig()
 
 	_, filename, _, _ := runtime.Caller(0)
 	baseDir := filepath.Dir(filename)
 	confFile := filepath.Join(baseDir, PathToDefaultCnfCoreNetParamsFile)
-	err := readFile(&netConf, confFile)
 
+	err := readFile(&netConf, confFile)
 	if err != nil {
 		log.Printf("Error to read config file %s", confFile)
 
@@ -67,7 +68,6 @@ func NewNetConfig() *NetworkConfig {
 	}
 
 	err = readEnv(&netConf)
-
 	if err != nil {
 		log.Print("Error to read environment variables")
 
@@ -115,7 +115,6 @@ func (netConfig *NetworkConfig) GetVLAN() (uint16, error) {
 	}
 
 	vlanInt, err := strconv.Atoi(netConfig.VLAN)
-
 	if err != nil {
 		return 0, err
 	}
@@ -242,8 +241,8 @@ func readFile(netConfig *NetworkConfig, cfgFile string) error {
 	}()
 
 	decoder := yaml.NewDecoder(openedCfgFile)
-	err = decoder.Decode(&netConfig)
 
+	err = decoder.Decode(&netConfig)
 	if err != nil {
 		return err
 	}

@@ -2,20 +2,23 @@ package helper
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/ocm"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran"
+	oranapi "github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api"
 	siteconfigv1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/siteconfig/v1alpha1"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/siteconfig"
 	. "github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/internal/raninittools"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/oran/internal/tsparams"
+	subscriber "github.com/rh-ecosystem-edge/eco-gotests/tests/internal/oran-subscriber"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -76,14 +79,14 @@ func WaitForNoncompliantImmutable(client *clients.Settings, namespace string, ti
 		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			policies, err := ocm.ListPoliciesInAllNamespaces(client, runtimeclient.ListOptions{Namespace: namespace})
 			if err != nil {
-				glog.V(tsparams.LogLevel).Infof("Failed to list all policies in namespace %s: %v", namespace, err)
+				klog.V(tsparams.LogLevel).Infof("Failed to list all policies in namespace %s: %v", namespace, err)
 
 				return false, nil
 			}
 
 			for _, policy := range policies {
 				if policy.Definition.Status.ComplianceState == policiesv1.NonCompliant {
-					glog.V(tsparams.LogLevel).Infof("Policy %s in namespace %s is not compliant, checking history",
+					klog.V(tsparams.LogLevel).Infof("Policy %s in namespace %s is not compliant, checking history",
 						policy.Definition.Name, policy.Definition.Namespace)
 
 					details := policy.Definition.Status.Details
@@ -97,7 +100,7 @@ func WaitForNoncompliantImmutable(client *clients.Settings, namespace string, ti
 					}
 
 					if strings.Contains(history[0].Message, tsparams.ImmutableMessage) {
-						glog.V(tsparams.LogLevel).Infof("Policy %s in namespace %s is not compliant due to an immutable field",
+						klog.V(tsparams.LogLevel).Infof("Policy %s in namespace %s is not compliant due to an immutable field",
 							policy.Definition.Name, policy.Definition.Namespace)
 
 						return true, nil
@@ -116,7 +119,7 @@ func WaitForValidPRClusterInstance(client *clients.Settings, timeout time.Durati
 		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			clusterInstance, err := siteconfig.PullClusterInstance(client, RANConfig.Spoke1Name, RANConfig.Spoke1Name)
 			if err != nil {
-				glog.V(tsparams.LogLevel).Infof("Failed to pull ClusterInstance %s: %v", RANConfig.Spoke1Name, err)
+				klog.V(tsparams.LogLevel).Infof("Failed to pull ClusterInstance %s: %v", RANConfig.Spoke1Name, err)
 
 				return false, nil
 			}
@@ -128,32 +131,90 @@ func WaitForValidPRClusterInstance(client *clients.Settings, timeout time.Durati
 		})
 }
 
-// WaitForPolicyVersion waits up to timeout until all of the policies in the namespace have the specified version.
-// Version is defined as the first hyphen-delimited part of the policy name. Since it lists policies in the spoke
-// namespace, it first splits on the period that separates the policy namespace and name before checking the version.
-func WaitForPolicyVersion(client *clients.Settings, version string, timeout time.Duration) error {
-	return wait.PollUntilContextTimeout(
+// WaitForAlarmToExist waits up to timeout until an alarm with the matching extensions exists. This is done by listing
+// all alarms and returning the first alarm where each key-value pair in matchingExtensions is a key-value pair in the
+// alarm's extensions.
+//
+// The returned alarm is guaranteed to be non-nil if error is nil.
+func WaitForAlarmToExist(
+	alarmsClient *oranapi.AlarmsClient,
+	matchingExtensions map[string]string,
+	timeout time.Duration) (*oranapi.AlarmEventRecord, error) {
+	var matchingAlarm *oranapi.AlarmEventRecord
+
+	err := wait.PollUntilContextTimeout(
 		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			policies, err := ocm.ListPoliciesInAllNamespaces(client, runtimeclient.ListOptions{Namespace: RANConfig.Spoke1Name})
+			alarms, err := alarmsClient.ListAlarms()
 			if err != nil {
-				glog.V(tsparams.LogLevel).Infof("Failed to list all policies in namespace %s: %v", RANConfig.Spoke1Name, err)
+				klog.V(tsparams.LogLevel).Infof("Failed to list alarms: %v", err)
 
 				return false, nil
 			}
 
-			for _, policy := range policies {
-				policySegments := strings.SplitN(policy.Definition.Name, ".", 2)
-				policyName := policySegments[len(policySegments)-1]
+			for _, alarm := range alarms {
+				if matchesExtensions(alarm.Extensions, matchingExtensions) {
+					matchingAlarm = &alarm
 
-				policyVersion := strings.SplitN(policyName, "-", 2)[0]
-				if policyVersion != version {
-					glog.V(tsparams.LogLevel).Infof("Policy %s in namespace %s has version %s, expected %s",
-						policy.Definition.Name, policy.Definition.Namespace, policyVersion, version)
-
-					return false, nil
+					return true, nil
 				}
 			}
 
-			return true, nil
+			return false, nil
+		})
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait for alarm matching %v to exist: %w", matchingExtensions, err)
+	}
+
+	return matchingAlarm, nil
+}
+
+// matchesExtensions returns true if each key-value pair in matchingExtensions is a key-value pair in the extensions
+// map. Keys not in matchingExtensions are ignored.
+func matchesExtensions(extensions map[string]string, matchingExtensions map[string]string) bool {
+	for key, value := range matchingExtensions {
+		if extensions[key] != value {
+			return false
+		}
+	}
+
+	return true
+}
+
+// WaitForAllNotifications waits up to timeout until all the expected trackers have been received as notifications by
+// the subscriber. The expectedTrackers map is modified in place as trackers are found; when all trackers are received,
+// the map will be empty.
+func WaitForAllNotifications(
+	client *clients.Settings,
+	namespace string,
+	startTime time.Time,
+	expectedTrackers map[string]bool,
+	timeout time.Duration) error {
+	return wait.PollUntilContextTimeout(
+		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			// Set the new start time to right before we check so there is no risk of missing a
+			// notification. Delete is a no-op if the tracker is not in the map, so we can tolerate
+			// duplicates.
+			newStartTime := time.Now()
+
+			receivedNotifications, err := subscriber.ListReceivedNotifications(client, namespace, startTime)
+			if err != nil {
+				klog.V(tsparams.LogLevel).Infof("Failed to list received notifications: %v", err)
+
+				return false, nil
+			}
+
+			for _, notification := range receivedNotifications {
+				if tracker, ok := notification.Extensions["tracker"]; ok {
+					klog.V(tsparams.LogLevel).Infof("Deleting expected tracker %s", tracker)
+
+					delete(expectedTrackers, tracker)
+				}
+			}
+
+			startTime = newStartTime
+
+			klog.V(tsparams.LogLevel).Infof("Waiting for %d more notifications", len(expectedTrackers))
+
+			return len(expectedTrackers) == 0, nil
 		})
 }

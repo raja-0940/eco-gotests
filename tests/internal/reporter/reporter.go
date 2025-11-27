@@ -2,22 +2,40 @@ package reporter
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/onsi/ginkgo/v2/types"
 	"github.com/openshift-kni/k8sreporter"
-	. "github.com/rh-ecosystem-edge/eco-gotests/tests/internal/inittools"
+	"github.com/rh-ecosystem-edge/eco-gotests/tests/internal/config"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
 )
 
 var (
 	pathToPodExecLogs = "/tmp/pod_exec_logs.log"
+	// generalCfg holds the configuration for reporter operations.
+	generalCfg *config.GeneralConfig
 )
+
+// init initializes the reporter configuration.
+func init() {
+	// Skip loading config if running unit tests
+	if os.Getenv("UNIT_TEST") == "true" {
+		return
+	}
+
+	generalCfg = config.NewConfig()
+}
+
+// SetGeneralConfig allows overriding the default configuration.
+func SetGeneralConfig(cfg *config.GeneralConfig) {
+	generalCfg = cfg
+}
 
 func newReporter(
 	reportPath,
@@ -39,7 +57,6 @@ func newReporter(
 	}
 
 	res, err := k8sreporter.New(kubeconfig, apiScheme, nsToDumpFilter, reportPath, cRDs...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -68,31 +85,43 @@ func ReportIfFailedOnCluster(
 		return
 	}
 
-	dumpDir := GeneralConfig.GetDumpFailedTestReportLocation(testSuite)
+	// If no config is available, skip dumping
+	if generalCfg == nil {
+		klog.V(100).Infof("No reporter configuration available, skipping dump for test: %s", testSuite)
+
+		return
+	}
+
+	dumpDir := generalCfg.GetDumpFailedTestReportLocation(testSuite)
 
 	if dumpDir != "" {
 		reporter, err := newReporter(dumpDir, kubeconfig, nSpaces, setReporterSchemes, cRDs)
-
 		if err != nil {
-			glog.Fatalf("Failed to create log reporter due to %s", err)
+			klog.Fatalf("Failed to create log reporter due to %s", err)
 		}
 
 		tcReportFolderName := strings.ReplaceAll(report.FullText(), " ", "_")
+
+		// Workaround for the fact we are unable to pass a context to specify a logger for the client used by
+		// the reporter. Otherwise, we get megabytes of verbose logging.
+		_ = flag.Set("v", "0")
+
 		reporter.Dump(report.RunTime, tcReportFolderName)
+
+		_ = flag.Set("v", generalCfg.VerboseLevel)
 
 		_, podExecLogsFName := path.Split(pathToPodExecLogs)
 
 		err = moveFile(
-			pathToPodExecLogs, path.Join(GeneralConfig.ReportsDirAbsPath, tcReportFolderName, podExecLogsFName))
-
+			pathToPodExecLogs, path.Join(generalCfg.ReportsDirAbsPath, tcReportFolderName, podExecLogsFName))
 		if err != nil {
-			glog.Fatalf("Failed to move pod exec logs %s to report folder: %s", pathToPodExecLogs, err)
+			klog.Fatalf("Failed to move pod exec logs %s to report folder: %s", pathToPodExecLogs, err)
 		}
 	}
 
 	err := removeFile(pathToPodExecLogs)
 	if err != nil {
-		glog.Fatalf(err.Error())
+		klog.Fatal(err.Error())
 	}
 }
 
@@ -103,7 +132,6 @@ func moveFile(sourcePath, destPath string) error {
 	}
 
 	inputFile, err := os.Open(sourcePath)
-
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
@@ -122,7 +150,6 @@ func moveFile(sourcePath, destPath string) error {
 	}()
 
 	_, err = io.Copy(outputFile, inputFile)
-
 	if err != nil {
 		return fmt.Errorf("writing to output file failed: %w", err)
 	}

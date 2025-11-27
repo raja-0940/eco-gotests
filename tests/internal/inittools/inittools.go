@@ -4,12 +4,11 @@ import (
 	"flag"
 	"os"
 
-	"github.com/golang/glog"
-	"github.com/onsi/ginkgo/v2"
+	"github.com/go-logr/logr"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/internal/config"
+	"k8s.io/klog/v2"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
@@ -22,8 +21,11 @@ var (
 // init loads all variables automatically when this package is imported. Once package is imported a user has full
 // access to all vars within init function. It is recommended to import this package using dot import.
 func init() {
-	// Work around bug in glog lib
-	logf.SetLogger(zap.New(zap.WriteTo(ginkgo.GinkgoWriter), zap.UseDevMode(true)))
+	klog.InitFlags(nil)
+	klog.EnableContextualLogging(true)
+	logf.SetLogger(logr.Discard())
+
+	_ = flag.Set("logtostderr", "true")
 
 	// Skip loading config if running unit tests
 	if os.Getenv("UNIT_TEST") == "true" {
@@ -31,17 +33,16 @@ func init() {
 	}
 
 	if GeneralConfig = config.NewConfig(); GeneralConfig == nil {
-		glog.Fatalf("error to load general config")
+		klog.Fatalf("error to load general config")
 	}
 
-	_ = flag.Lookup("logtostderr").Value.Set("true")
-	_ = flag.Lookup("v").Value.Set(GeneralConfig.VerboseLevel)
+	_ = flag.Set("v", GeneralConfig.VerboseLevel)
 
 	if APIClient = clients.New(""); APIClient == nil {
 		if GeneralConfig.DryRun {
 			return
 		}
 
-		glog.Exitf("can not load ApiClient. Please check your KUBECONFIG env var")
+		klog.Exitf("can not load ApiClient. Please check your KUBECONFIG env var")
 	}
 }

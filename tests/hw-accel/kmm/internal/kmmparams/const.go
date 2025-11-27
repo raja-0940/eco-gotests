@@ -84,46 +84,49 @@ RUN depmod -b /opt ${KERNEL_VERSION}
 	// SimpleKmodFirmwareContents represents the Dockerfile contents for simple-kmod-firmware build.
 	SimpleKmodFirmwareContents = `ARG DTK_AUTO
 FROM ${DTK_AUTO} as builder
-ARG KVER
-ARG KERNEL_VERSION
+ARG KERNEL_FULL_VERSION
+ARG MOD_NAME
+ARG MOD_NAMESPACE
 ARG KMODVER
 
 WORKDIR /build/ 
 RUN git clone https://github.com/cdvultur/simple-kmod.git && \
    cd simple-kmod && \
-   make all       KVER=$KERNEL_VERSION KMODVER=$KMODVER && \
-   make install   KVER=$KERNEL_VERSION KMODVER=$KMODVER
+   make all       KVER=$KERNEL_FULL_VERSION KMODVER=$KMODVER && \
+   make install   KVER=$KERNEL_FULL_VERSION KMODVER=$KMODVER
 
 FROM registry.redhat.io/ubi9/ubi-minimal
-ARG KERNEL_VERSION
+ARG KERNEL_FULL_VERSION
+ARG MOD_NAME
+ARG MOD_NAMESPACE
 RUN microdnf -y install kmod
 
 COPY --from=builder /etc/driver-toolkit-release.json /etc/
-COPY --from=builder /lib/modules/$KERNEL_VERSION/simple-*.ko /opt/lib/modules/${KERNEL_VERSION}/
-COPY --from=builder /lib/modules/$KERNEL_VERSION/modules.* /opt/lib/modules/${KERNEL_VERSION}/
-RUN depmod -b /opt ${KERNEL_VERSION}
+COPY --from=builder /lib/modules/$KERNEL_FULL_VERSION/simple-*.ko /opt/lib/modules/${KERNEL_FULL_VERSION}/
+COPY --from=builder /lib/modules/$KERNEL_FULL_VERSION/modules.* /opt/lib/modules/${KERNEL_FULL_VERSION}/
+RUN depmod -b /opt ${KERNEL_FULL_VERSION}
 
 RUN mkdir /firmware
 RUN echo -n "simple_kmod_firmware validation string" >> /firmware/simple_kmod_firmware.bin
 `
 	// LocalMultiStageContents represents the Dockerfile contents for multi stage build using local registry.
 	LocalMultiStageContents = `FROM image-registry.openshift-image-registry.svc:5000/openshift/driver-toolkit as builder
-ARG KERNEL_VERSION
-ARG MY_MODULE
+ARG KERNEL_FULL_VERSION
+ARG MOD_NAME
 WORKDIR /build
 RUN git clone https://github.com/cdvultur/kmm-kmod.git
 WORKDIR /build/kmm-kmod
-RUN cp kmm_ci_a.c {{.Module}}.c
-RUN make
+RUN cp kmm_ci_a.c $MOD_NAME.c
+RUN echo "obj-m += $MOD_NAME.o" >> Makefile
+RUN make KVER=${KERNEL_FULL_VERSION}
 
 FROM registry.redhat.io/ubi9/ubi-minimal
-ARG KERNEL_VERSION
-ARG MY_MODULE
+ARG KERNEL_FULL_VERSION
 RUN microdnf -y install kmod
 
 COPY --from=builder /etc/driver-toolkit-release.json /etc/
-COPY --from=builder /build/kmm-kmod/*.ko /opt/lib/modules/${KERNEL_VERSION}/
-RUN depmod -b /opt
+COPY --from=builder /build/kmm-kmod/*.ko /opt/lib/modules/${KERNEL_FULL_VERSION}/
+RUN depmod -b /opt ${KERNEL_FULL_VERSION}
 `
 
 	//nolint:lll
@@ -247,6 +250,10 @@ const (
 	// Compatible with OpenShift Container Platform 4.18.
 	PreflightDTKImageARM64 = "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:" +
 		"ada767898092f36e8d965292843f9a772b2df449aeda06580430162696bd5ddf"
+	// PreflightDTKImageS390X represents S390X DTK image for KMM 2.4 preflightvalidationocp.
+	// Compatible with OpenShift Container Platform 4.18.
+	PreflightDTKImageS390X = "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:" +
+		"a61237a389ac9e52841468a5540f810b50f33e9106d9817eb1e1e04cf6064ce8"
 	// PreflightDTKImagePPC64LE represents PPC64LE DTK image for KMM 2.4 preflightvalidationocp.
 	PreflightDTKImagePPC64LE = "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:" +
 		"7785b2a16b2a2c7443cfc59164c74acb341237b09a9f87c5f0747c9140d21b92"
@@ -262,6 +269,10 @@ const (
 	KernelForDTKX86 = "5.14.0-427.81.1.el9_4.x86_64"
 	// KernelForDTKX86Realtime represents kernel string for x86 realtime dtk image.
 	KernelForDTKX86Realtime = "5.14.0-427.81.1.el9_4.x86_64+rt"
+	// KernelForDTKS390x represents kernel string for s390x dtk image.
+	KernelForDTKS390x = "5.14.0-427.65.1.el9_4.s390x"
+	// KernelForDTKS390xRealtime represents kernel string for s390x realtime dtk image.
+	KernelForDTKS390xRealtime = "not supported"
 	// PreflightName represents preflightvalidation ocp object name.
 	PreflightName = "preflight"
 	// ScannerTestNamespace represents test case namespace name.

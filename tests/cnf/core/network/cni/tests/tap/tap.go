@@ -474,7 +474,6 @@ func fetchNewDeploymentPod(waitUntilRunning bool) *pod.Builder {
 		deploymentPodList, _ = pod.List(APIClient, tsparams.TestNamespaceName, metav1.ListOptions{})
 
 		return len(deploymentPodList) == 1
-
 	}, tsparams.DefaultTimeout, 3*time.Second).Should(BeTrue(), "Failed to collect deployment pods")
 
 	if waitUntilRunning {
@@ -486,13 +485,13 @@ func fetchNewDeploymentPod(waitUntilRunning bool) *pod.Builder {
 }
 
 func doesInterfaceHasCorrectMasterAndIPAddress(podObject *pod.Builder, intName, ipAddr string) {
-	buffer, err := podObject.ExecCommand([]string{"ip", "addr", "show", intName})
+	buffer, err := podObject.ExecCommand([]string{"ip", "-c=never", "addr", "show", intName})
 	Expect(err).ToNot(HaveOccurred(), "Fail to get interface ip address on pod")
 	Expect(strings.Contains(buffer.String(), ipAddr)).To(BeTrue(), fmt.Sprintf("Fail to detect requested ip %s", ipAddr))
 }
 
 func collectLinkConfigFromPod(podObject *pod.Builder, intName string) string {
-	buffer, err := podObject.ExecCommand([]string{"ip", "-d", "link", "show", "dev", intName})
+	buffer, err := podObject.ExecCommand([]string{"ip", "-c=never", "-d", "link", "show", "dev", intName})
 	Expect(err).ToNot(HaveOccurred(), "Fail to get link information on pod")
 
 	return buffer.String()

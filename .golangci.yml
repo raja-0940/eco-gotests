@@ -1,6 +1,6 @@
 version: "2"
 run:
-  go: "1.24"
+  go: "1.25"
 output:
   formats:
     text:
@@ -43,7 +43,7 @@ linters:
     - unparam
     - usetesting
     - varnamelen
-    - wsl
+    - wsl_v5
   disable:
     - ireturn
   settings:
@@ -57,6 +57,8 @@ linters:
             - k8s.io/kubelet
             - k8s.io/utils
             - k8s.io/client-go
+            - k8s.io/klog/v2
+            - github.com/go-logr/logr
             - github.com/kelseyhightower
             - github.com/Juniper/go-netconf
             - github.com/openshift
@@ -72,7 +74,6 @@ linters:
             - github.com/operator-framework/api
             - github.com/vmware-tanzu/velero/pkg/apis/velero/v1
             - github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/scheme
-            - github.com/golang/glog
             - github.com/povsister/scp
             - maistra.io/api
             - open-cluster-management.io/governance-policy-propagator/api
@@ -94,6 +95,14 @@ linters:
             - github.com/rh-ecosystem-edge/eco-gotests
             - github.com/prometheus/client_golang
             - github.com/prometheus/common
+            - github.com/prometheus/alertmanager
+            - github.com/go-openapi/runtime
+            - github.com/go-openapi/strfmt
+            - golang.org/x/oauth2
+            - github.com/google/uuid
+            - golang.org/x/exp/constraints
+            - github.com/redhat-cne/sdk-go
+            - github.com/prometheus-operator/prometheus-operator
           deny:
             - pkg: github.com/onsi**
     funlen:
@@ -141,6 +150,8 @@ linters:
         - github.com/rh-ecosystem-edge/eco-gotests/tests/lca/imagebasedinstall/mgmt/internal/mgmtinittools
         - github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/diskencryption/internal/diskencryptioninittools
         - github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/o-cloud/internal/ocloudinittools
+        - github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/o-cloud/internal/ocloudcommon
+        - github.com/rh-ecosystem-edge/eco-gotests/tests/ocp/sriov/internal/ocpsriovinittools
     wsl:
       strict-append: false
   exclusions:
@@ -191,6 +202,9 @@ linters:
         path: tests/lca/imagebasedupgrade/cnf/internal/cnfinittools
       - linters:
           - gochecknoinits
+        path: tests/ocp/sriov/internal/ocpsriovinittools
+      - linters:
+          - gochecknoinits
         path: tests/hw-accel/kmm/internal/kmminittools
       - linters:
           - gochecknoinits
@@ -207,6 +221,9 @@ linters:
       - linters:
           - gochecknoinits
         path: tests/lca/imagebasedinstall/mgmt/internal/mgmtinittools
+      - linters:
+          - gochecknoinits
+        path: tests/internal/reporter
       - linters:
           - depguard
         path: tests/internal/inittools

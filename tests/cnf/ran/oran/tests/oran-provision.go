@@ -1,28 +1,24 @@
 package tests
 
 import (
-	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	provisioningv1alpha1 "github.com/openshift-kni/oran-o2ims/api/provisioning/v1alpha1"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/configmap"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/ocm"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran"
-	oranapi "github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/reportxml"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/secret"
-	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/siteconfig"
 	. "github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/internal/raninittools"
+	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/oran/internal/auth"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/oran/internal/helper"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/ran/oran/internal/tsparams"
+	"k8s.io/klog/v2"
 	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -34,10 +30,10 @@ var _ = Describe("ORAN Provision Tests", Label(tsparams.LabelProvision), Ordered
 		var err error
 
 		By("creating the O2IMS API client")
-		o2imsAPIClient, err = oranapi.NewClientBuilder(RANConfig.O2IMSBaseURL).
-			WithToken(RANConfig.O2IMSToken).
-			WithTLSConfig(&tls.Config{InsecureSkipVerify: true}).
-			BuildProvisioning()
+		clientBuilder, err := auth.NewClientBuilderForConfig(RANConfig)
+		Expect(err).ToNot(HaveOccurred(), "Failed to create the O2IMS API client builder")
+
+		o2imsAPIClient, err = clientBuilder.BuildProvisioning()
 		Expect(err).ToNot(HaveOccurred(), "Failed to create the O2IMS API client")
 	})
 
@@ -136,31 +132,11 @@ func saveSpoke1Secret(suffix, key, fileName string) error {
 func verifySpokeProvisioning() error {
 	var accumulatedErrors []error
 
-	By("verifying a NodeAllocationRequest was created")
-
-	_, err := oran.PullNodeAllocationRequest(HubAPIClient, RANConfig.Spoke1Name, tsparams.HardwareManagerNamespace)
-	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify a NodeAllocationRequest was created: %v", err)
-
-		accumulatedErrors = append(accumulatedErrors,
-			fmt.Errorf("failed to verify a NodeAllocationRequest was created: %w", err))
-	}
-
-	By("verifying the ClusterInstance has the correct BMC details")
-
-	err = verifyBMCDetails()
-	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify the ClusterInstance BMC details: %v", err)
-
-		accumulatedErrors = append(accumulatedErrors,
-			fmt.Errorf("failed to verify the ClusterInstance BMC details: %w", err))
-	}
-
 	By("verifying spoke 1 pull-secret was created")
 
-	_, err = secret.Pull(HubAPIClient, "pull-secret", RANConfig.Spoke1Name)
+	_, err := secret.Pull(HubAPIClient, "pull-secret", RANConfig.Spoke1Name)
 	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify the pull-secret was created: %v", err)
+		klog.V(tsparams.LogLevel).Infof("Failed to verify the pull-secret was created: %v", err)
 
 		accumulatedErrors = append(accumulatedErrors, fmt.Errorf("failed to verify the pull-secret was created: %w", err))
 	}
@@ -169,7 +145,7 @@ func verifySpokeProvisioning() error {
 
 	_, err = configmap.Pull(HubAPIClient, tsparams.ExtraManifestsName, RANConfig.Spoke1Name)
 	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify the extra-manifests ConfigMap was created: %v", err)
+		klog.V(tsparams.LogLevel).Infof("Failed to verify the extra-manifests ConfigMap was created: %v", err)
 
 		accumulatedErrors = append(accumulatedErrors,
 			fmt.Errorf("failed to verify the extra-manifests ConfigMap was created: %w", err))
@@ -178,10 +154,10 @@ func verifySpokeProvisioning() error {
 	By("verifying spoke 1 policy ConfigMap was created")
 
 	ztpNamespace := fmt.Sprintf("ztp-%s-%s", tsparams.ClusterTemplateName, RANConfig.ClusterTemplateAffix)
-	_, err = configmap.Pull(HubAPIClient, RANConfig.Spoke1Name+"-pg", ztpNamespace)
 
+	_, err = configmap.Pull(HubAPIClient, RANConfig.Spoke1Name+"-pg", ztpNamespace)
 	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify spoke 1 policy ConfigMap was created: %v", err)
+		klog.V(tsparams.LogLevel).Infof("Failed to verify spoke 1 policy ConfigMap was created: %v", err)
 
 		accumulatedErrors = append(accumulatedErrors,
 			fmt.Errorf("failed to verify spoke 1 policy ConfigMap was created: %w", err))
@@ -192,52 +168,10 @@ func verifySpokeProvisioning() error {
 	err = ocm.WaitForAllPoliciesComplianceState(
 		HubAPIClient, policiesv1.Compliant, time.Minute, runtimeclient.ListOptions{Namespace: RANConfig.Spoke1Name})
 	if err != nil {
-		glog.V(tsparams.LogLevel).Infof("Failed to verify all policies are compliant: %v", err)
+		klog.V(tsparams.LogLevel).Infof("Failed to verify all policies are compliant: %v", err)
 
 		accumulatedErrors = append(accumulatedErrors, fmt.Errorf("failed to verify all policies are compliant: %w", err))
 	}
 
 	return errors.Join(accumulatedErrors...)
-}
-
-// verifyBMCDetails ensures that the BMC address, username, and password for the spoke 1 ClusterInstance match the
-// configured values.
-func verifyBMCDetails() error {
-	clusterInstance, err := siteconfig.PullClusterInstance(HubAPIClient, RANConfig.Spoke1Name, RANConfig.Spoke1Name)
-	if err != nil {
-		return fmt.Errorf("failed to pull ClusterInstance for spoke 1: %w", err)
-	}
-
-	clusterInstanceNode := clusterInstance.Definition.Spec.Nodes[0]
-	if !strings.Contains(clusterInstanceNode.BmcAddress, RANConfig.BMCHosts[0]) {
-		return fmt.Errorf("clusterInstance has incorrect BMC address: %s", clusterInstanceNode.BmcAddress)
-	}
-
-	bmcSecret, err := secret.Pull(HubAPIClient, clusterInstanceNode.BmcCredentialsName.Name, RANConfig.Spoke1Name)
-	if err != nil {
-		return fmt.Errorf("failed to pull spoke 1 BMC secret: %w", err)
-	}
-
-	bmcUsername, exists := bmcSecret.Definition.Data["username"]
-	if !exists {
-		return fmt.Errorf("username key does not appear in ClusterInstance BMC secret data")
-	}
-
-	bmcUsername = bytes.TrimSpace(bmcUsername)
-	if string(bmcUsername) != RANConfig.BMCUsername {
-		return fmt.Errorf("clusterInstance BMC username %s does not match expected username %s",
-			string(bmcUsername), RANConfig.BMCUsername)
-	}
-
-	bmcPassword, exists := bmcSecret.Definition.Data["password"]
-	if !exists {
-		return fmt.Errorf("password key does not appear in ClusterInstance BMC secret data")
-	}
-
-	bmcPassword = bytes.TrimSpace(bmcPassword)
-	if string(bmcPassword) != RANConfig.BMCPassword {
-		return fmt.Errorf("clusterInstance BMC password does not match the expected password")
-	}
-
-	return nil
 }

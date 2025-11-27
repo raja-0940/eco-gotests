@@ -13,13 +13,13 @@ import (
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/rdscore/internal/rdscoreparams"
 	"gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/pod"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/system-tests/internal/apiobjectshelper"
 
-	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
@@ -73,47 +73,47 @@ func createPrivilegedPodLevelBondDeployment(
 	bondInfSubMaskIPv4,
 	bondInfSubMaskIPv6,
 	bondInfMacAddr string) error {
-	glog.V(100).Infof("Ensuring deployment %q doesn't exist in %q namespace", deploymentName, nsName)
+	klog.V(100).Infof("Ensuring deployment %q doesn't exist in %q namespace", deploymentName, nsName)
 
 	err := cleanUpPodLevelBondDeployment(apiClient, deploymentName, nsName, podLabel)
 	if err != nil {
-		glog.V(100).Infof("Failed to cleanup deployment %s from the namespace %s: %v",
+		klog.V(100).Infof("Failed to cleanup deployment %s from the namespace %s: %v",
 			deploymentName, nsName, err)
 
 		return fmt.Errorf("failed to cleanup deployment %s from the namespace %s: %w",
 			deploymentName, nsName, err)
 	}
 
-	glog.V(100).Infof("Removing ServiceAccount %q", podLevelBondDeploymentSAName)
+	klog.V(100).Infof("Removing ServiceAccount %q", podLevelBondDeploymentSAName)
 	deleteServiceAccount(podLevelBondDeploymentSAName, nsName)
 
-	glog.V(100).Infof("Creating ServiceAccount %q", podLevelBondDeploymentSAName)
+	klog.V(100).Infof("Creating ServiceAccount %q", podLevelBondDeploymentSAName)
 	createServiceAccount(podLevelBondDeploymentSAName, nsName)
 
-	glog.V(100).Infof("Removing Cluster RBAC %q in namespace %q", podLevelBondDeploymentRBACName, nsName)
+	klog.V(100).Infof("Removing Cluster RBAC %q in namespace %q", podLevelBondDeploymentRBACName, nsName)
 	deleteClusterRBAC(podLevelBondDeploymentRBACName)
 
-	glog.V(100).Infof("Creating Cluster RBAC %q in namespace %q", podLevelBondDeploymentRBACName, nsName)
+	klog.V(100).Infof("Creating Cluster RBAC %q in namespace %q", podLevelBondDeploymentRBACName, nsName)
 	createClusterRBAC(
 		podLevelBondDeploymentRBACName,
 		podLevelBondDeploymentRBACRole,
 		podLevelBondDeploymentSAName,
 		nsName)
 
-	glog.V(100).Infof("Defining container configuration")
+	klog.V(100).Infof("Defining container configuration")
 
 	deploymentContainer := definePodLevelBondDeploymentContainer()
 
-	glog.V(100).Infof("Obtaining container definition")
+	klog.V(100).Infof("Obtaining container definition")
 
 	deployContainerCfg, err := deploymentContainer.GetContainerCfg()
 	if err != nil {
-		glog.V(100).Infof("Failed to obtain container definition: %v", err)
+		klog.V(100).Infof("Failed to obtain container definition: %v", err)
 
 		return fmt.Errorf("failed to obtain container definition: %w", err)
 	}
 
-	glog.V(100).Infof("Defining deployment %q in namespace %q configuration", deploymentName, nsName)
+	klog.V(100).Infof("Defining deployment %q in namespace %q configuration", deploymentName, nsName)
 
 	testPodDeployment, err := definePodLevelBondTestPodDeployment(
 		apiClient,
@@ -131,18 +131,18 @@ func createPrivilegedPodLevelBondDeployment(
 		bondInfMacAddr,
 		podLevelBondPodLabelMap)
 	if err != nil {
-		glog.V(100).Infof("Failed to define deployment %s in namespace %s: %v",
+		klog.V(100).Infof("Failed to define deployment %s in namespace %s: %v",
 			deploymentName, nsName, err)
 
 		return fmt.Errorf("failed to define deployment %s in namespace %s: %w",
 			deploymentName, nsName, err)
 	}
 
-	glog.V(100).Infof("Creating deployment %q in namespace %q configuration", deploymentName, nsName)
+	klog.V(100).Infof("Creating deployment %q in namespace %q configuration", deploymentName, nsName)
 
 	testPodDeployment, err = testPodDeployment.CreateAndWaitUntilReady(5 * time.Minute)
 	if err != nil {
-		glog.V(100).Infof("Failed to create deployment %s in namespace %s: %v",
+		klog.V(100).Infof("Failed to create deployment %s in namespace %s: %v",
 			deploymentName, nsName, err)
 
 		return fmt.Errorf("failed to create deployment %s in namespace %s: %w",
@@ -150,7 +150,7 @@ func createPrivilegedPodLevelBondDeployment(
 	}
 
 	if testPodDeployment == nil {
-		glog.V(100).Infof("Deployment %s not found in namespace %s", deploymentName, nsName)
+		klog.V(100).Infof("Deployment %s not found in namespace %s", deploymentName, nsName)
 
 		return fmt.Errorf("deployment %s not found in namespace %s", deploymentName, nsName)
 	}
@@ -160,17 +160,15 @@ func createPrivilegedPodLevelBondDeployment(
 
 func cleanUpPodLevelBondDeployment(apiClient *clients.Settings, deploymentName, nsName, podLabel string) error {
 	_, err := deployment.Pull(apiClient, deploymentName, nsName)
-
 	if err != nil {
-		glog.V(100).Infof("Deployment %s not found in namespace %s, %v", deploymentName, nsName, err)
+		klog.V(100).Infof("Deployment %s not found in namespace %s, %v", deploymentName, nsName, err)
 	}
 
-	glog.V(100).Infof("Ensure %s deployment does not exist in namespace %s", deploymentName, nsName)
+	klog.V(100).Infof("Ensure %s deployment does not exist in namespace %s", deploymentName, nsName)
 
 	err = apiobjectshelper.DeleteDeployment(apiClient, deploymentName, nsName)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to delete deployment %s from nsname %s due to %v",
+		klog.V(100).Infof("Failed to delete deployment %s from nsname %s due to %v",
 			deploymentName, nsName, err)
 
 		return fmt.Errorf("failed to delete deployment %s from nsname %s due to %w",
@@ -178,9 +176,8 @@ func cleanUpPodLevelBondDeployment(apiClient *clients.Settings, deploymentName, 
 	}
 
 	err = apiobjectshelper.EnsureAllPodsRemoved(apiClient, nsName, podLabel)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to delete pods in namespace %s with the label %s: %w", nsName, podLabel, err)
+		klog.V(100).Infof("Failed to delete pods in namespace %s with the label %s: %v", nsName, podLabel, err)
 
 		return fmt.Errorf("failed to delete pods in namespace %s with the label %s: %w", nsName, podLabel, err)
 	}
@@ -204,11 +201,11 @@ func definePodLevelBondDeploymentContainer() *pod.ContainerBuilder {
 		mtuSize,
 	}
 
-	glog.V(100).Infof("Creating container %q", cName)
+	klog.V(100).Infof("Creating container %q", cName)
 
 	deploymentContainer := pod.NewContainerBuilder(cName, RDSCoreConfig.PodLevelBondDeployImage, containerCmd)
 
-	glog.V(100).Infof("Defining SecurityContext")
+	klog.V(100).Infof("Defining SecurityContext")
 
 	var trueFlag = true
 
@@ -227,15 +224,15 @@ func definePodLevelBondDeploymentContainer() *pod.ContainerBuilder {
 		},
 	}
 
-	glog.V(100).Infof("Setting SecurityContext")
+	klog.V(100).Infof("Setting SecurityContext")
 
 	deploymentContainer = deploymentContainer.WithSecurityContext(securityContext)
 
-	glog.V(100).Infof("Dropping ALL security capability")
+	klog.V(100).Infof("Dropping ALL security capability")
 
 	deploymentContainer = deploymentContainer.WithDropSecurityCapabilities([]string{"ALL"}, true)
 
-	glog.V(100).Infof("%q container's  definition:\n%#v", cName, deploymentContainer)
+	klog.V(100).Infof("%q container's  definition:\n%#v", cName, deploymentContainer)
 
 	return deploymentContainer
 }
@@ -255,28 +252,28 @@ func definePodLevelBondTestPodDeployment(
 	bondInfSubMaskIPv6,
 	bondInfMacAddr string,
 	deployLabels map[string]string) (*deployment.Builder, error) {
-	glog.V(100).Infof("Defining deployment %q in %q ns", deploymentName, nsName)
+	klog.V(100).Infof("Defining deployment %q in %q ns", deploymentName, nsName)
 
 	if bondInfIPv4 == "" {
-		glog.V(100).Infof("Bond interface IPv4 address is missing")
+		klog.V(100).Infof("Bond interface IPv4 address is missing")
 
 		return nil, fmt.Errorf("bond interface IPv4 address is missing")
 	}
 
 	if bondInfIPv6 == "" {
-		glog.V(100).Infof("Bond interface IPv6 address is missing")
+		klog.V(100).Infof("Bond interface IPv6 address is missing")
 
 		return nil, fmt.Errorf("bond interface IPv6 address is missing")
 	}
 
 	if bondInfSubMaskIPv4 == "" {
-		glog.V(100).Infof("Bond interface IPv4 address subnet mask is missing")
+		klog.V(100).Infof("Bond interface IPv4 address subnet mask is missing")
 
 		return nil, fmt.Errorf("bond interface IPv4 address subnet mask is missing")
 	}
 
 	if bondInfSubMaskIPv6 == "" {
-		glog.V(100).Infof("Bond interface IPv6 address subnet mask is missing")
+		klog.V(100).Infof("Bond interface IPv6 address subnet mask is missing")
 
 		return nil, fmt.Errorf("bond interface IPv6 address subnet mask is missing")
 	}
@@ -303,11 +300,11 @@ func definePodLevelBondTestPodDeployment(
 
 	podDeployment := deployment.NewBuilder(apiClient, deploymentName, nsName, deployLabels, *containerConfig)
 
-	glog.V(100).Infof("Assigning ServiceAccount %q to the deployment", podLevelBondDeploymentSAName)
+	klog.V(100).Infof("Assigning ServiceAccount %q to the deployment", podLevelBondDeploymentSAName)
 
 	podDeployment = podDeployment.WithServiceAccountName(podLevelBondDeploymentSAName)
 
-	glog.V(100).Infof("Assigning NodeSelector %q to the deployment", nodeSelector)
+	klog.V(100).Infof("Assigning NodeSelector %q to the deployment", nodeSelector)
 	podDeployment = podDeployment.WithNodeSelector(nodeSelector)
 
 	podDeployment = podDeployment.WithSecondaryNetwork(netAnnotations)
@@ -315,6 +312,7 @@ func definePodLevelBondTestPodDeployment(
 	return podDeployment, nil
 }
 
+//nolint:unparam
 func generateTCPTraffic(
 	clientPod *pod.Builder,
 	serverIPAddr,
@@ -323,13 +321,12 @@ func generateTCPTraffic(
 	timeout string) (string, error) {
 	By("Open long TCP session and generate traffic")
 
-	glog.V(100).Infof("Ensure pod %q in namespace %q is Ready",
+	klog.V(100).Infof("Ensure pod %q in namespace %q is Ready",
 		clientPod.Definition.Name, clientPod.Definition.Namespace)
 
-	err := clientPod.WaitUntilReady(5 * time.Second)
-
+	err := clientPod.WaitUntilReady(1 * time.Minute)
 	if err != nil {
-		glog.V(100).Infof("Failed to wait for pod %q in namespace %q to become Ready: %v",
+		klog.V(100).Infof("Failed to wait for pod %q in namespace %q to become Ready: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return "", fmt.Errorf("failed to wait for pod %q in namespace %q to become Ready: %w",
@@ -340,7 +337,7 @@ func generateTCPTraffic(
 		fmt.Sprintf("testcmd -protocol tcp -port %s -interface net3 -packages %s -timeoutTCP %s -server %s -mtu %s",
 			serverPort, packetsNumber, timeout, serverIPAddr, mtuSize)}
 
-	glog.V(100).Infof("Execute command: %q", cmdToRun)
+	klog.V(100).Infof("Execute command: %q", cmdToRun)
 
 	var output string
 
@@ -351,23 +348,21 @@ func generateTCPTraffic(
 		true,
 		func(ctx context.Context) (bool, error) {
 			result, err := clientPod.ExecCommand(cmdToRun, clientPod.Object.Spec.Containers[0].Name)
-
 			if err != nil {
-				glog.V(100).Infof("Error running command from within a pod %q: %v",
+				klog.V(100).Infof("Error running command from within a pod %q: %v",
 					clientPod.Object.Name, err)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
+			klog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
 				clientPod.Object.Name, clientPod.Definition.Namespace)
 
 			output = result.String()
-			glog.V(100).Infof("Command's output:\n\t%v", output)
+			klog.V(100).Infof("Command's output:\n\t%v", output)
 
 			return true, nil
 		})
-
 	if err != nil {
 		return "", fmt.Errorf("failed to run command from within pod %s: %w", clientPod.Object.Name, err)
 	}
@@ -381,24 +376,23 @@ func findInCmdExecOutput(cmdExecOutput, stringToFind string) (bool, error) {
 	matchesFound := 0
 
 	if cmdExecOutput == "" {
-		glog.V(100).Infof("The cmdExecOutput is empty")
+		klog.V(100).Infof("The cmdExecOutput is empty")
 
 		return false, fmt.Errorf("the cmdExecOutput is empty")
 	}
 
 	buf := new(bytes.Buffer)
-	_, err = buf.WriteString(cmdExecOutput)
 
+	_, err = buf.WriteString(cmdExecOutput)
 	if err != nil {
-		glog.V(100).Infof("error in copying info from the cmdExecOutput to buffer: %v", err)
+		klog.V(100).Infof("error in copying info from the cmdExecOutput to buffer: %v", err)
 
 		return false, fmt.Errorf("error in copying info from the cmdExecOutput to buffer: %w", err)
 	}
 
 	stringToFindRegex, err := regexp.Compile(stringToFind)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to compile stringToFind %s: %v", stringToFind, err)
+		klog.V(100).Infof("Failed to compile stringToFind %s: %v", stringToFind, err)
 
 		return false, fmt.Errorf("failed to compile stringToFind %s: %w", stringToFind, err)
 	}
@@ -408,14 +402,14 @@ func findInCmdExecOutput(cmdExecOutput, stringToFind string) (bool, error) {
 	for scanner.Scan() {
 		logLine := scanner.Text()
 		if stringToFindRegex.MatchString(logLine) {
-			glog.V(100).Infof("Match for the string %q was found", stringToFind)
+			klog.V(100).Infof("Match for the string %q was found", stringToFind)
 
 			matchesFound++
 		}
 	}
 
 	if matchesFound < 1 {
-		glog.V(100).Infof("Expected string %q not found in the output: %s", stringToFind, cmdExecOutput)
+		klog.V(100).Infof("Expected string %q not found in the output: %s", stringToFind, cmdExecOutput)
 
 		return false, fmt.Errorf("expected string %q not found in the output : %s", stringToFind, cmdExecOutput)
 	}
@@ -424,18 +418,17 @@ func findInCmdExecOutput(cmdExecOutput, stringToFind string) (bool, error) {
 }
 
 func scanClientPodTrafficOutput(clientPodOutput string) (bool, error) {
-	glog.V(100).Infof("client pod output: %s", clientPodOutput)
+	klog.V(100).Infof("client pod output: %s", clientPodOutput)
 
 	isFound, err := findInCmdExecOutput(clientPodOutput, tcpTestPassedMsg)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to parse clientPodOutput due to %v", err)
+		klog.V(100).Infof("Failed to parse clientPodOutput due to %v", err)
 
 		return false, fmt.Errorf("failed to parse clientPodOutput due to %w", err)
 	}
 
 	if !isFound {
-		glog.V(100).Infof("TCP traffic transmission failure detected: %s", clientPodOutput)
+		klog.V(100).Infof("TCP traffic transmission failure detected: %s", clientPodOutput)
 
 		return false, fmt.Errorf("tcp traffic transmission failure detected: %s", clientPodOutput)
 	}
@@ -444,7 +437,7 @@ func scanClientPodTrafficOutput(clientPodOutput string) (bool, error) {
 }
 
 func getBondActiveInterface(clientPod *pod.Builder) (string, error) {
-	glog.V(90).Infof("Getting bond active VF interface for the pod %s in namespace %s",
+	klog.V(90).Infof("Getting bond active VF interface for the pod %s in namespace %s",
 		clientPod.Definition.Name, clientPod.Definition.Namespace)
 
 	var (
@@ -455,7 +448,7 @@ func getBondActiveInterface(clientPod *pod.Builder) (string, error) {
 
 	cmdToRun := []string{"bash", "-c", "cat /sys/class/net/net3/bonding/active_slave"}
 
-	glog.V(100).Infof("Execute command: %q", cmdToRun)
+	klog.V(100).Infof("Execute command: %q", cmdToRun)
 
 	err = wait.PollUntilContextTimeout(
 		context.TODO(),
@@ -464,26 +457,31 @@ func getBondActiveInterface(clientPod *pod.Builder) (string, error) {
 		true,
 		func(ctx context.Context) (bool, error) {
 			output, err = clientPod.ExecCommand(cmdToRun, clientPod.Object.Spec.Containers[0].Name)
-
 			if err != nil {
-				glog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
+				klog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
 					clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q: %v",
+			if strings.TrimSpace(output.String()) == "" {
+				klog.V(100).Infof("The active_slave interface name is empty for a pod %q in namespace %q",
+					clientPod.Definition.Name, clientPod.Definition.Namespace)
+
+				return false, nil
+			}
+
+			klog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q: %v",
 				clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 			result = output.String()
 
-			glog.V(100).Infof("Command's output:\n\t%v", result)
+			klog.V(100).Infof("Command's output:\n\t%v", result)
 
 			return true, nil
 		})
-
 	if err != nil {
-		glog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
+		klog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return "", fmt.Errorf("failed to run command from within pod %q in namespace %q: %w",
@@ -496,12 +494,12 @@ func getBondActiveInterface(clientPod *pod.Builder) (string, error) {
 func disableBondActiveVFInterface(clientPod *pod.Builder) error {
 	var err error
 
-	glog.V(100).Infof("Retrieve bond active interface name for the pod %s in namespace %s",
+	klog.V(100).Infof("Retrieve bond active interface name for the pod %s in namespace %s",
 		clientPod.Definition.Name, clientPod.Definition.Namespace)
 
 	interfaceName, err := getBondActiveInterface(clientPod)
 	if err != nil {
-		glog.V(100).Infof("Failed to retrieve bond active interface for the pod %s in namespace %s: %v",
+		klog.V(100).Infof("Failed to retrieve bond active interface for the pod %s in namespace %s: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return fmt.Errorf("failed to retrieve bond active interface for the pod %s in namespace %s: %w",
@@ -509,21 +507,20 @@ func disableBondActiveVFInterface(clientPod *pod.Builder) error {
 	}
 
 	err = changeInterfaceState(clientPod, interfaceName, true)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to disable interface %s for the pod %q in namespace %q: %v",
+		klog.V(100).Infof("Failed to disable interface %s for the pod %q in namespace %q: %v",
 			interfaceName, clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return fmt.Errorf("failed to disable interface %s for the pod %q in namespace %q: %w",
 			interfaceName, clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 	}
 
-	glog.V(100).Infof("Retrieve new bond active interface name for the pod %s in namespace %s",
+	klog.V(100).Infof("Retrieve new bond active interface name for the pod %s in namespace %s",
 		clientPod.Definition.Name, clientPod.Definition.Namespace)
 
 	newInterfaceName, err := getBondActiveInterface(clientPod)
 	if err != nil {
-		glog.V(100).Infof("Failed to retrieve bond active interface for the pod %s in namespace %s: %v",
+		klog.V(100).Infof("Failed to retrieve bond active interface for the pod %s in namespace %s: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return fmt.Errorf("failed to retrieve bond active interface for the pod %s in namespace %s: %w",
@@ -531,7 +528,7 @@ func disableBondActiveVFInterface(clientPod *pod.Builder) error {
 	}
 
 	if newInterfaceName == interfaceName {
-		glog.V(100).Infof("The bond active interface for the pod %s in namespace %s did not changed;"+
+		klog.V(100).Infof("The bond active interface for the pod %s in namespace %s did not changed;"+
 			"current bond active interface is %s, the original bond active interface is %s",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, newInterfaceName, interfaceName)
 
@@ -540,7 +537,7 @@ func disableBondActiveVFInterface(clientPod *pod.Builder) error {
 			clientPod.Definition.Name, clientPod.Definition.Namespace, newInterfaceName, interfaceName)
 	}
 
-	glog.V(100).Infof("The bond active interface of the pod %s in namespace %s "+
+	klog.V(100).Infof("The bond active interface of the pod %s in namespace %s "+
 		"successfully switched from the %s to the %s",
 		clientPod.Definition.Name, clientPod.Definition.Namespace, interfaceName, newInterfaceName)
 
@@ -562,12 +559,12 @@ func changeInterfaceState(clientPod *pod.Builder, interfaceName string, toDisabl
 		expectedInfState = "up"
 	}
 
-	glog.V(100).Infof("Change pod-level bond interface %s for the pod %s in namespace %s state to the %s",
+	klog.V(100).Infof("Change pod-level bond interface %s for the pod %s in namespace %s state to the %s",
 		interfaceName, clientPod.Definition.Name, clientPod.Definition.Namespace, expectedInfState)
 
 	cmdToRun := []string{"bash", "-c", fmt.Sprintf("ip link set dev %s %s", interfaceName, expectedInfState)}
 
-	glog.V(100).Infof("Execute command: %q", cmdToRun)
+	klog.V(100).Infof("Execute command: %q", cmdToRun)
 
 	err = wait.PollUntilContextTimeout(
 		context.TODO(),
@@ -576,38 +573,36 @@ func changeInterfaceState(clientPod *pod.Builder, interfaceName string, toDisabl
 		true,
 		func(ctx context.Context) (bool, error) {
 			output, err = clientPod.ExecCommand(cmdToRun, clientPod.Object.Spec.Containers[0].Name)
-
 			if err != nil {
-				glog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
+				klog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
 					clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
+			klog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
 				clientPod.Definition.Name, clientPod.Definition.Namespace)
 
 			result = output.String()
 
-			glog.V(100).Infof("Command's output:\n\t%v", result)
+			klog.V(100).Infof("Command's output:\n\t%v", result)
 
 			return true, nil
 		})
-
 	if err != nil {
-		glog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
+		klog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return fmt.Errorf("failed to run command from within pod %q in namespace %q: %w",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 	}
 
-	glog.V(100).Infof("Change pod-level bond interface %s for the pod %s in namespace %s state to the %s",
+	klog.V(100).Infof("Change pod-level bond interface %s for the pod %s in namespace %s state to the %s",
 		interfaceName, clientPod.Definition.Name, clientPod.Definition.Namespace, expectedInfState)
 
 	cmdToRun = []string{"bash", "-c", "ip link show up"}
 
-	glog.V(100).Infof("Execute command: %q", cmdToRun)
+	klog.V(100).Infof("Execute command: %q", cmdToRun)
 
 	err = wait.PollUntilContextTimeout(
 		context.TODO(),
@@ -616,38 +611,36 @@ func changeInterfaceState(clientPod *pod.Builder, interfaceName string, toDisabl
 		true,
 		func(ctx context.Context) (bool, error) {
 			output, err = clientPod.ExecCommand(cmdToRun, clientPod.Object.Spec.Containers[0].Name)
-
 			if err != nil {
-				glog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
+				klog.V(100).Infof("Error running command from within a pod %q in namespace %q: %v",
 					clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
+			klog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
 				clientPod.Definition.Name, clientPod.Definition.Namespace)
 
 			result = output.String()
 
-			glog.V(100).Infof("Command's output:\n\t%v", result)
+			klog.V(100).Infof("Command's output:\n\t%v", result)
 
 			if toDisable && strings.Contains(result, fmt.Sprintf("%s:", interfaceName)) {
-				glog.V(100).Infof("interface %q not in the state %q", interfaceName, expectedInfState)
+				klog.V(100).Infof("interface %q not in the state %q", interfaceName, expectedInfState)
 
 				return false, nil
 			}
 
 			if !toDisable && !strings.Contains(result, fmt.Sprintf("%s:", interfaceName)) {
-				glog.V(100).Infof("interface %q not in the state %q", interfaceName, expectedInfState)
+				klog.V(100).Infof("interface %q not in the state %q", interfaceName, expectedInfState)
 
 				return false, nil
 			}
 
 			return true, nil
 		})
-
 	if err != nil {
-		glog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
+		klog.V(100).Infof("Failed to run command from within pod %q in namespace %q: %v",
 			clientPod.Definition.Name, clientPod.Definition.Namespace, err)
 
 		return fmt.Errorf("failed to run command from within pod %q in namespace %q: %w",
@@ -658,14 +651,14 @@ func changeInterfaceState(clientPod *pod.Builder, interfaceName string, toDisabl
 }
 
 func inspectPodLevelBondedInterfaceConfig(podObj *pod.Builder, ipv4Addr, ipv6Addr string) (bool, error) {
-	glog.V(100).Infof("Verify pod-level bonded interface configuration for pod %q in namespace %q",
+	klog.V(100).Infof("Verify pod-level bonded interface configuration for pod %q in namespace %q",
 		podObj.Definition.Name, podObj.Definition.Namespace)
 
 	cmdToRun := []string{"bash", "-c", "ip a show type bond"}
 
 	var output string
 
-	glog.V(100).Infof("Execute command: %q", cmdToRun)
+	klog.V(100).Infof("Execute command: %q", cmdToRun)
 
 	err := wait.PollUntilContextTimeout(
 		context.TODO(),
@@ -674,47 +667,44 @@ func inspectPodLevelBondedInterfaceConfig(podObj *pod.Builder, ipv4Addr, ipv6Add
 		true,
 		func(ctx context.Context) (bool, error) {
 			result, err := podObj.ExecCommand(cmdToRun, podObj.Object.Spec.Containers[0].Name)
-
 			if err != nil {
-				glog.V(100).Infof("Error running command from within a pod %q: %v",
+				klog.V(100).Infof("Error running command from within a pod %q: %v",
 					podObj.Object.Name, err)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
+			klog.V(100).Infof("Successfully executed command from within a pod %q in namespace %q",
 				podObj.Object.Name, podObj.Definition.Namespace)
 
 			output = result.String()
 
 			if output == "" {
-				glog.V(100).Infof("The command execution output is empty %q", output)
+				klog.V(100).Infof("The command execution output is empty %q", output)
 
 				return false, nil
 			}
 
-			glog.V(100).Infof("The command execution output:\n\t%v", output)
+			klog.V(100).Infof("The command execution output:\n\t%v", output)
 
 			return true, nil
 		})
-
 	if err != nil {
 		return false, fmt.Errorf("failed to run command from within pod %s: %w", podObj.Object.Name, err)
 	}
 
 	if ipv4Addr != "" {
-		glog.V(100).Infof("Ensure IPv4 %s address defined as expected", ipv4Addr)
+		klog.V(100).Infof("Ensure IPv4 %s address defined as expected", ipv4Addr)
 
 		ipv4Found, err := findInCmdExecOutput(output, ipv4Addr)
-
 		if err != nil {
-			glog.V(100).Infof("Failed to parse output due to %v", err)
+			klog.V(100).Infof("Failed to parse output due to %v", err)
 
 			return false, fmt.Errorf("failed to parse output due to %w", err)
 		}
 
 		if !ipv4Found {
-			glog.V(100).Infof("IPv4 address %s not found configured for the bond interface "+
+			klog.V(100).Infof("IPv4 address %s not found configured for the bond interface "+
 				"of the pod %s in namespace %s: %s",
 				ipv4Addr, podObj.Definition.Name, podObj.Definition.Namespace, output)
 
@@ -725,18 +715,17 @@ func inspectPodLevelBondedInterfaceConfig(podObj *pod.Builder, ipv4Addr, ipv6Add
 	}
 
 	if ipv6Addr != "" {
-		glog.V(100).Infof("Ensure IPv6 %s address defined as expected", ipv6Addr)
+		klog.V(100).Infof("Ensure IPv6 %s address defined as expected", ipv6Addr)
 
 		ipv6Found, err := findInCmdExecOutput(output, ipv6Addr)
-
 		if err != nil {
-			glog.V(100).Infof("Failed to parse output due to %v", err)
+			klog.V(100).Infof("Failed to parse output due to %v", err)
 
 			return false, fmt.Errorf("failed to parse output due to %w", err)
 		}
 
 		if !ipv6Found {
-			glog.V(100).Infof("IPv6 address %s not found configured for the bond interface "+
+			klog.V(100).Infof("IPv6 address %s not found configured for the bond interface "+
 				"of the pod %s in namespace %s: %s",
 				ipv6Addr, podObj.Definition.Name, podObj.Definition.Namespace, output)
 
@@ -760,14 +749,14 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 		func(ctx context.Context) (bool, error) {
 			podObjList, err := pod.ListByNamePattern(apiClient, podNamePattern, podNamespace)
 			if err != nil {
-				glog.V(100).Infof("Error getting pod object by name pattern %q in namespace %q: %v",
+				klog.V(100).Infof("Error getting pod object by name pattern %q in namespace %q: %v",
 					podNamePattern, podNamespace, err)
 
 				return false, nil
 			}
 
 			if len(podObjList) == 0 {
-				glog.V(100).Infof("No pods %s were found in namespace %q", podNamePattern, podNamespace)
+				klog.V(100).Infof("No pods %s were found in namespace %q", podNamePattern, podNamespace)
 
 				return false, nil
 			}
@@ -778,24 +767,24 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 			for _, _pod := range podObjList {
 				switch {
 				case _pod.Object.Status.Phase == corev1.PodRunning && _pod.Object.DeletionTimestamp == nil:
-					glog.V(100).Infof("Pod %q is active (running and not marked for deletion)",
+					klog.V(100).Infof("Pod %q is active (running and not marked for deletion)",
 						_pod.Definition.Name)
 
 					runningPods = append(runningPods, _pod)
 				case _pod.Object.DeletionTimestamp != nil:
-					glog.V(100).Infof("Pod %q is marked for deletion, skipping", _pod.Definition.Name)
+					klog.V(100).Infof("Pod %q is marked for deletion, skipping", _pod.Definition.Name)
 				default:
-					glog.V(100).Infof("Pod %q is in %q phase, skipping", _pod.Definition.Name, _pod.Object.Status.Phase)
+					klog.V(100).Infof("Pod %q is in %q phase, skipping", _pod.Definition.Name, _pod.Object.Status.Phase)
 				}
 			}
 
 			switch {
 			case len(runningPods) == 0:
-				glog.V(100).Infof("No running pods %s were found in namespace %q", podNamePattern, podNamespace)
+				klog.V(100).Infof("No running pods %s were found in namespace %q", podNamePattern, podNamespace)
 
 				return false, nil
 			case len(runningPods) > 1:
-				glog.V(100).Infof("Wrong pod %s count %d was found in namespace %q",
+				klog.V(100).Infof("Wrong pod %s count %d was found in namespace %q",
 					podNamePattern, len(runningPods), podNamespace)
 
 				unexpectedRunningPods := make([]string, 0, len(runningPods))
@@ -803,7 +792,7 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 					unexpectedRunningPods = append(unexpectedRunningPods, _pod.Definition.Name)
 				}
 
-				glog.V(100).Infof("Unexpected running pods %v were found in namespace %q",
+				klog.V(100).Infof("Unexpected running pods %v were found in namespace %q",
 					unexpectedRunningPods, podNamespace)
 
 				return false, nil
@@ -811,13 +800,12 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 
 			podObj = runningPods[0]
 
-			glog.V(100).Infof("Selected pod %q in namespace %q", podObj.Definition.Name, podObj.Definition.Namespace)
+			klog.V(100).Infof("Selected pod %q in namespace %q", podObj.Definition.Name, podObj.Definition.Namespace)
 
 			return true, nil
 		})
-
 	if err != nil {
-		glog.V(100).Infof("Failed to retrieve pod %q in namespace %q: %v",
+		klog.V(100).Infof("Failed to retrieve pod %q in namespace %q: %v",
 			podNamePattern, podNamespace, err)
 
 		return nil, fmt.Errorf("failed to retrieve pod %q in namespace %q: %w",
@@ -826,7 +814,7 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 
 	err = podObj.WaitUntilReady(time.Second * 30)
 	if err != nil {
-		glog.V(100).Infof("The pod-level bonded pod %s in namespace %s is not in Ready state: %v",
+		klog.V(100).Infof("The pod-level bonded pod %s in namespace %s is not in Ready state: %v",
 			podNamePattern, podNamespace, err)
 
 		return nil, fmt.Errorf("the pod-level bonded pod %s in namespace %s is not in Ready state: %w",
@@ -839,10 +827,11 @@ func getPodObjectByNamePattern(apiClient *clients.Settings, podNamePattern, podN
 func getBondActiveInterfaceSrIovNetworkName(podObj *pod.Builder) (string, error) {
 	podNetAnnotation := podObj.Object.Annotations["k8s.v1.cni.cncf.io/network-status"]
 
-	activeInterfaceName, err := getBondActiveInterface(podObj)
+	klog.V(100).Infof("%q pod's network annotation: %q", podObj.Definition.Name, podNetAnnotation)
 
+	activeInterfaceName, err := getBondActiveInterface(podObj)
 	if err != nil {
-		glog.V(100).Infof("No active interface found for the pod %s in namespace %s: %v",
+		klog.V(100).Infof("No active interface found for the pod %s in namespace %s: %v",
 			podObj.Definition.Name, podObj.Definition.Namespace, err)
 
 		return "", fmt.Errorf("no active interface found for the pod %s in namespace %s: %w",
@@ -850,17 +839,20 @@ func getBondActiveInterfaceSrIovNetworkName(podObj *pod.Builder) (string, error)
 	}
 
 	var podNetworkStatusType []podNetworkAnnotation
-	err = json.Unmarshal([]byte(podNetAnnotation), &podNetworkStatusType)
 
+	err = json.Unmarshal([]byte(podNetAnnotation), &podNetworkStatusType)
 	if err != nil {
-		glog.V(100).Infof("Error unmarshalling pod network status annotation %q: %v", podNetAnnotation, err)
+		klog.V(100).Infof("Error unmarshalling pod network status annotation %q: %v", podNetAnnotation, err)
 
 		return "", fmt.Errorf("error unmarshalling pod network status annotation %q: %w", podNetAnnotation, err)
 	}
 
 	for _, networkAnnotation := range podNetworkStatusType {
+		klog.V(100).Infof("Comparing network interface: %q with active interface: %q",
+			networkAnnotation.Interface, activeInterfaceName)
+
 		if networkAnnotation.Interface == activeInterfaceName {
-			glog.V(100).Infof("Found sriov network name for the active interface %s in pod %s "+
+			klog.V(100).Infof("Found sriov network name for the active interface %s in pod %s "+
 				"in namespace %s: %s",
 				activeInterfaceName, podObj.Object.Name, podObj.Object.Namespace, networkAnnotation.Name)
 
@@ -870,7 +862,7 @@ func getBondActiveInterfaceSrIovNetworkName(podObj *pod.Builder) (string, error)
 		}
 	}
 
-	glog.V(100).Infof("Failed to find sriov network name for the active interface %s in pod %s "+
+	klog.V(100).Infof("Failed to find sriov network name for the active interface %s in pod %s "+
 		"in namespace %s: %v", activeInterfaceName, podObj.Object.Name, podObj.Object.Namespace, podNetworkStatusType)
 
 	return "", fmt.Errorf("failed to find sriov network name for the active interface %s in pod %s "+
@@ -927,7 +919,7 @@ func verifyPodLevelBondWorkloads(
 	if serverIPv4 != "" {
 		By("Send data from the client container to the IPv4 address used by the server container")
 
-		output, err := generateTCPTraffic(clientPodObj, serverIPv4, RDSCoreConfig.PodLevelBondPort, "2", "2")
+		output, err := generateTCPTraffic(clientPodObj, serverIPv4, RDSCoreConfig.PodLevelBondPort, "2", "5")
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("Failed to generate TCP traffic from the pod %s in namespace %s to the server %s: %v",
 				clientPodObj.Definition.Name, clientPodObj.Definition.Namespace, serverIPv4, err))
@@ -944,7 +936,7 @@ func verifyPodLevelBondWorkloads(
 	if serverIPv6 != "" {
 		By("Send data from the client container to the IPv6 address used by the server container")
 
-		output, err := generateTCPTraffic(clientPodObj, serverIPv6, RDSCoreConfig.PodLevelBondPort, "2", "2")
+		output, err := generateTCPTraffic(clientPodObj, serverIPv6, RDSCoreConfig.PodLevelBondPort, "2", "5")
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("Failed to generate TCP traffic from the pod %s in namespace %s to the server %s: %v",
 				clientPodObj.Definition.Name, clientPodObj.Definition.Namespace, serverIPv6, err))
@@ -961,7 +953,7 @@ func verifyPodLevelBondWorkloads(
 	if clientIPv4 != "" {
 		By("Send data from the server container to the IPv4 address used by the client container")
 
-		output, err := generateTCPTraffic(serverPodObj, clientIPv4, RDSCoreConfig.PodLevelBondPort, "2", "2")
+		output, err := generateTCPTraffic(serverPodObj, clientIPv4, RDSCoreConfig.PodLevelBondPort, "2", "5")
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("Failed to generate TCP traffic from the pod %s in namespace %s to the server %s: %v",
 				serverPodObj.Definition.Name, serverPodObj.Definition.Namespace, clientIPv4, err))
@@ -978,7 +970,7 @@ func verifyPodLevelBondWorkloads(
 	if clientIPv6 != "" {
 		By("Send data from the client container to the IPv6 address used by the server container")
 
-		output, err := generateTCPTraffic(serverPodObj, clientIPv6, RDSCoreConfig.PodLevelBondPort, "2", "2")
+		output, err := generateTCPTraffic(serverPodObj, clientIPv6, RDSCoreConfig.PodLevelBondPort, "2", "5")
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("Failed to generate TCP traffic from the pod %s in namespace %s to the server %s: %v",
 				serverPodObj.Definition.Name, serverPodObj.Definition.Namespace, clientIPv6, err))
@@ -996,7 +988,7 @@ func verifyPodLevelBondWorkloads(
 func prepareSecondPodLevelBondDeployment(sameNode, samePF bool) {
 	By("Create privileged pod-level bond deployment")
 
-	glog.V(100).Infof("Retrieve client pod-level bond pod %s from the namespace %s",
+	klog.V(100).Infof("Retrieve client pod-level bond pod %s from the namespace %s",
 		RDSCoreConfig.PodLevelBondDeploymentOneName, RDSCoreConfig.PodLevelBondNamespace)
 
 	clientPod, err := getPodObjectByNamePattern(
@@ -1005,7 +997,7 @@ func prepareSecondPodLevelBondDeployment(sameNode, samePF bool) {
 		RDSCoreConfig.PodLevelBondNamespace)
 
 	if err != nil || clientPod == nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod-Level Bond client deployment not found")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod-Level Bond client deployment not found")
 
 		Skip("Pod-Level Bond client deployment not found. Skipping...")
 	}
@@ -1025,7 +1017,7 @@ func prepareSecondPodLevelBondDeployment(sameNode, samePF bool) {
 	Expect(schedulerOnHost).ToNot(Equal(""),
 		fmt.Sprintf("Failed to setup schedulerOnHost value; client pod found: /n%q", clientPod.Definition))
 
-	glog.V(100).Infof("Setup server deployment sriov networks")
+	klog.V(100).Infof("Setup server deployment sriov networks")
 
 	var netOne, netTwo string
 
@@ -1183,7 +1175,7 @@ func VerifyPodLevelBondWorkloadsAfterVFFailOver() {
 	Eventually(func() bool {
 		newActiveInf, err := getBondActiveInterface(serverPodObj)
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof(
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof(
 				"Failed to retrieve new bond active interface for the pod %s in namespace %s: %v",
 				serverPodObj.Definition.Name, serverPodObj.Definition.Namespace, err)
 
@@ -1191,7 +1183,7 @@ func VerifyPodLevelBondWorkloadsAfterVFFailOver() {
 		}
 
 		if newActiveInf == activeInf {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof(
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof(
 				"The bond active interface did not changed yet %q", newActiveInf)
 
 			return false
@@ -1240,7 +1232,7 @@ func VerifyPodLevelBondWorkloadsAfterBondInterfaceFailure() {
 		fmt.Sprintf("Failed to retrieve bond active interface for the pod deployment %s in namespace %s: %v",
 			testPodObj.Definition.Name, testPodObj.Definition.Namespace, err))
 
-	glog.V(100).Infof("DEBUG LOG: active interface found - %s", activeInf)
+	klog.V(100).Infof("DEBUG LOG: active interface found - %s", activeInf)
 
 	verifyConnectivity()
 }
@@ -1297,7 +1289,7 @@ func VerifyPodLevelBondWorkloadsAfterBothVFsFailure() {
 		fmt.Sprintf("Failed to retrieve bond active interface for the pod deployment %s in namespace %s: %v",
 			testPodObj.Definition.Name, testPodObj.Definition.Namespace, err))
 
-	glog.V(100).Infof("DEBUG LOG: active interface found - %s", activeInf)
+	klog.V(100).Infof("DEBUG LOG: active interface found - %s", activeInf)
 
 	verifyConnectivity()
 }

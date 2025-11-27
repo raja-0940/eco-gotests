@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/nodes"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/pod"
 	amdparams "github.com/rh-ecosystem-edge/eco-gotests/tests/hw-accel/amdgpu/params"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 // NodeLabellerPodsFromNodes - Get all Node Labeller Pods from the given nodes.
@@ -79,10 +79,10 @@ func PodsFromNodeByPrefixWithTimeout(ctx context.Context, waitGroup *sync.WaitGr
 		case <-time.After(interval):
 			var podsWithPrefix []*pod.Builder
 
-			glog.V(amdparams.AMDGPULogLevel).Infof("Listing Pods on node %s", node.Object.Name)
+			klog.V(amdparams.AMDGPULogLevel).Infof("Listing Pods on node %s", node.Object.Name)
+
 			podBuilders, podsListErr := pod.List(apiClient, amdparams.AMDGPUNamespace,
 				metav1.ListOptions{FieldSelector: podListFieldSelector})
-
 			if podsListErr != nil {
 				errCh <- fmt.Errorf("failed to list Pods on node '%s'.\n%w", node.Object.Name, podsListErr)
 
@@ -104,7 +104,9 @@ func PodsFromNodeByPrefixWithTimeout(ctx context.Context, waitGroup *sync.WaitGr
 
 			if len(podsWithPrefix) == cnt {
 				lock.Lock()
+
 				*podsResults = append(*podsResults, podsWithPrefix...)
+
 				lock.Unlock()
 
 				return
@@ -135,14 +137,19 @@ func WaitUntilNoMorePodsInNamespaceByNameWithTimeout(ctx context.Context, apiCli
 			return fmt.Errorf("timeout period has been exceeded while waiting until no more Pods with prefix '%s'", prefix)
 		case <-time.After(chkInterval):
 			podsWithPrefix = nil
-			listedPods, listPodsErr := pod.List(apiClient, namespace)
 
+			listedPods, listPodsErr := pod.List(apiClient, namespace)
 			if listPodsErr != nil {
 				return fmt.Errorf("failed to list Pods. %w", listPodsErr)
 			}
 
 			for _, podBuilder := range listedPods {
+				klog.V(amdparams.AMDGPULogLevel).Infof("Check if the '%s' Pod's name contains the prefix '%s'",
+					podBuilder.Object.Name, prefix)
+
 				if strings.HasPrefix(podBuilder.Object.Name, prefix) {
+					klog.V(amdparams.AMDGPULogLevel).Infof("The Pod '%s' contains the prefix '%s'",
+						podBuilder.Object.Name, prefix)
 					podsWithPrefix = append(podsWithPrefix, podBuilder)
 				}
 			}

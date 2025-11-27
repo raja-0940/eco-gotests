@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/bmc"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/nodes"
@@ -16,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 // AreClustersPresent checks all of the provided clusters and returns false if any are nil.
@@ -79,7 +79,7 @@ func IsSnoPlusOne(client *clients.Settings) (bool, error) {
 		return false, nil
 	}
 
-	glog.V(tsparams.LogLevel).Info("Exactly one control plane node found")
+	klog.V(tsparams.LogLevel).Info("Exactly one control plane node found")
 
 	workers, err := ListNodesByLabel(client, RANConfig.WorkerLabelMap)
 	if err != nil {
@@ -98,9 +98,29 @@ func IsSnoPlusOne(client *clients.Settings) (bool, error) {
 		return false, nil
 	}
 
-	glog.V(tsparams.LogLevel).Info("Exactly one worker node found")
+	klog.V(tsparams.LogLevel).Info("Exactly one worker node found")
 
 	return true, nil
+}
+
+// IsSNO checks if the specified cluster is a SNO cluster. For it to be a SNO cluster, there must be exactly one node
+// that is both a control plane and a worker node.
+func IsSNO(client *clients.Settings) (bool, error) {
+	workers, err := ListNodesByLabel(client, RANConfig.WorkerLabelMap)
+	if err != nil {
+		return false, fmt.Errorf("failed to list worker nodes: %w", err)
+	}
+
+	controlPlanes, err := ListNodesByLabel(client, RANConfig.ControlPlaneLabelMap)
+	if err != nil {
+		return false, fmt.Errorf("failed to list control plane nodes: %w", err)
+	}
+
+	if len(workers) == 1 && len(controlPlanes) == 1 && IsNodeControlPlane(workers[0]) {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // ListNodesByLabel returns a list of nodes that have the specified label.
@@ -123,7 +143,7 @@ func WaitForNumberOfNodes(client *clients.Settings, expected int, timeout time.D
 				return true, nil
 			}
 
-			glog.V(tsparams.LogLevel).Infof("Expected %d nodes but found %d nodes", expected, len(nodeList))
+			klog.V(tsparams.LogLevel).Infof("Expected %d nodes but found %d nodes", expected, len(nodeList))
 
 			return false, nil
 		})
@@ -155,11 +175,27 @@ func DoesClusterLabelExist(client *clients.Settings, clusterName string, label s
 	return exists, nil
 }
 
+// GetManagedClusterID gets the cluster ID from the managed cluster labels. It returns an error if the managed cluster
+// or its ID could not be found.
+func GetManagedClusterID(client *clients.Settings, clusterName string) (string, error) {
+	managedCluster, err := ocm.PullManagedCluster(client, clusterName)
+	if err != nil {
+		return "", fmt.Errorf("failed to pull managed cluster: %w", err)
+	}
+
+	clusterID := managedCluster.Object.GetLabels()["clusterID"]
+	if clusterID == "" {
+		return "", fmt.Errorf("cluster ID not found in managed cluster labels")
+	}
+
+	return clusterID, nil
+}
+
 // PowerOffAndWait will trigger a power off and poll every 30 seconds for up to 3 minutes until the system is off.
 func PowerOffAndWait(bmcClient *bmc.BMC) error {
 	err := bmcClient.SystemPowerOff()
 	if err != nil {
-		glog.V(ranparam.LogLevel).Infof("Failed to trigger system power off: %v", err)
+		klog.V(ranparam.LogLevel).Infof("Failed to trigger system power off: %v", err)
 
 		return err
 	}
@@ -168,13 +204,13 @@ func PowerOffAndWait(bmcClient *bmc.BMC) error {
 		context.TODO(), 30*time.Second, 3*time.Minute, true, func(ctx context.Context) (bool, error) {
 			powerState, err := bmcClient.SystemPowerState()
 			if err != nil {
-				glog.V(ranparam.LogLevel).Infof("Failed to get system power state: %v", err)
+				klog.V(ranparam.LogLevel).Infof("Failed to get system power state: %v", err)
 
 				return false, err
 			}
 
 			if powerState != "Off" {
-				glog.V(ranparam.LogLevel).Infof("System power state is not Off: %s", powerState)
+				klog.V(ranparam.LogLevel).Infof("System power state is not Off: %s", powerState)
 
 				return false, nil
 			}
@@ -194,7 +230,7 @@ func PowerOffWithRetries(bmcClient *bmc.BMC, retries uint) error {
 			return nil
 		}
 
-		glog.V(ranparam.LogLevel).Infof("Powering off failed with %d retries left: %v", retries-retry-1, err)
+		klog.V(ranparam.LogLevel).Infof("Powering off failed with %d retries left: %v", retries-retry-1, err)
 	}
 
 	return err
@@ -204,7 +240,7 @@ func PowerOffWithRetries(bmcClient *bmc.BMC, retries uint) error {
 func PowerOnAndWait(bmcClient *bmc.BMC) error {
 	err := bmcClient.SystemPowerOn()
 	if err != nil {
-		glog.V(ranparam.LogLevel).Infof("Failed to trigger system power off: %v", err)
+		klog.V(ranparam.LogLevel).Infof("Failed to trigger system power off: %v", err)
 
 		return err
 	}
@@ -213,13 +249,13 @@ func PowerOnAndWait(bmcClient *bmc.BMC) error {
 		context.TODO(), 30*time.Second, 3*time.Minute, true, func(ctx context.Context) (bool, error) {
 			powerState, err := bmcClient.SystemPowerState()
 			if err != nil {
-				glog.V(ranparam.LogLevel).Infof("Failed to get system power state: %v", err)
+				klog.V(ranparam.LogLevel).Infof("Failed to get system power state: %v", err)
 
 				return false, err
 			}
 
 			if powerState != "On" {
-				glog.V(ranparam.LogLevel).Infof("System power state is not On: %s", powerState)
+				klog.V(ranparam.LogLevel).Infof("System power state is not On: %s", powerState)
 
 				return false, nil
 			}
@@ -239,7 +275,7 @@ func PowerOnWithRetries(bmcClient *bmc.BMC, retries uint) error {
 			return nil
 		}
 
-		glog.V(ranparam.LogLevel).Infof("Powering on failed with %d retries left: %v", retries-retry-1, err)
+		klog.V(ranparam.LogLevel).Infof("Powering on failed with %d retries left: %v", retries-retry-1, err)
 	}
 
 	return err

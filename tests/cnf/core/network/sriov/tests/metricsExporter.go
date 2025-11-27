@@ -43,7 +43,8 @@ var serverPodTXPromQL = []string{"bash", "-c", "promtool query instant -o json "
 	"http://localhost:9090 \"sum(sriov_vf_tx_packets * on(pciAddr) group_left(pod) " +
 	"sriov_kubepoddevice{pod=\\\"serverpod\\\"}) by (pod)\""}
 
-var _ = Describe("SriovMetricsExporter", Ordered, Label(tsparams.LabelSriovMetricsTestCases),
+var _ = Describe(
+	"SriovMetricsExporter", Ordered, Label(tsparams.LabelSriovMetricsTestCases, tsparams.LabelSriovHWEnabled),
 	ContinueOnFailure, func() {
 
 		var (
@@ -70,9 +71,10 @@ var _ = Describe("SriovMetricsExporter", Ordered, Label(tsparams.LabelSriovMetri
 			sriovInterfacesUnderTest, err = NetConfig.GetSriovInterfaces(2)
 			Expect(err).ToNot(HaveOccurred(), "Failed to retrieve SR-IOV interfaces for testing")
 
-			By("Fetching SR-IOV Device ID for interface under test")
-			sriovVendorID = discoverInterfaceUnderTestVendorID(sriovInterfacesUnderTest[0], workerNodeList[0].Definition.Name)
-			Expect(sriovVendorID).ToNot(BeEmpty(), "Expected sriovDeviceID not to be empty")
+			By("Fetching SR-IOV Vendor ID for interface under test")
+			sriovVendorID, err = sriovenv.DiscoverInterfaceUnderTestVendorID(
+				sriovInterfacesUnderTest[0], workerNodeList[0].Definition.Name)
+			Expect(err).ToNot(HaveOccurred(), "Failed to fetch SR-IOV Vendor ID for interface under test")
 
 			By("Enable Sriov Metrics Exporter feature in default SriovOperatorConfig CR")
 			setMetricsExporter(true)

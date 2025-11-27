@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/configmap"
@@ -18,6 +17,7 @@ import (
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/serviceaccount"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/sriov"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
@@ -77,7 +77,7 @@ const (
 )
 
 func getSRIOVOperatorConfig() (*srIovV1.SriovOperatorConfig, error) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Retrieving SR-IOV Operator config")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Retrieving SR-IOV Operator config")
 
 	sriovConfigBuiler := sriov.NewOperatorConfigBuilder(APIClient, sriovNS)
 
@@ -96,20 +96,18 @@ func getSRIOVOperatorConfig() (*srIovV1.SriovOperatorConfig, error) {
 			var getErr error
 
 			sriovConfig, getErr = sriovConfigBuiler.Get()
-
 			if getErr != nil {
-				glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error retrieving SR-IOV Operator config: %v", getErr)
+				klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error retrieving SR-IOV Operator config: %v", getErr)
 
 				return false, nil
 			}
 
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Retrieved SR-IOV Operator config")
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Retrieved SR-IOV Operator config")
 
 			return true, nil
 		})
-
 	if err != nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error retrieving SR-IOV Operator config: %v", err)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error retrieving SR-IOV Operator config: %v", err)
 
 		return &srIovV1.SriovOperatorConfig{}, err
 	}
@@ -127,12 +125,12 @@ func getSRIOVConfigOption(sriovConfig *srIovV1.SriovOperatorConfig, option strin
 	featureEnabled, optionFound = sriovConfig.Spec.FeatureGates[option]
 
 	if !optionFound {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Feature %q is not defined in the SR-IOV operator config")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Feature %q is not defined in the SR-IOV operator config", option)
 
 		return optionFound, optionFound
 	}
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Feature %q is defined with value: %v", option, featureEnabled)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Feature %q is defined with value: %v", option, featureEnabled)
 
 	return featureEnabled, optionFound
 }
@@ -140,7 +138,7 @@ func getSRIOVConfigOption(sriovConfig *srIovV1.SriovOperatorConfig, option strin
 func createServiceAccount(saName, nsName string) {
 	By(fmt.Sprintf("Creating ServiceAccount %q in %q namespace",
 		saName, nsName))
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating SA %q in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating SA %q in %q namespace",
 		saName, nsName)
 
 	deploySa := serviceaccount.NewBuilder(APIClient, saName, nsName)
@@ -149,15 +147,14 @@ func createServiceAccount(saName, nsName string) {
 
 	Eventually(func() bool {
 		deploySa, err := deploySa.Create()
-
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error creating SA %q in %q namespace: %v",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error creating SA %q in %q namespace: %v",
 				saName, nsName, err)
 
 			return false
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Created SA %q in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Created SA %q in %q namespace",
 			deploySa.Definition.Name, deploySa.Definition.Namespace)
 
 		return true
@@ -167,36 +164,35 @@ func createServiceAccount(saName, nsName string) {
 
 func deleteServiceAccount(saName, nsName string) {
 	By("Removing Service Account")
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert SA %q exists in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert SA %q exists in %q namespace",
 		saName, nsName)
 
 	var ctx SpecContext
 
 	if deploySa, err := serviceaccount.Pull(
 		APIClient, saName, nsName); err == nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("ServiceAccount %q found in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("ServiceAccount %q found in %q namespace",
 			saName, nsName)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleting ServiceAccount %q in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleting ServiceAccount %q in %q namespace",
 			saName, nsName)
 
 		Eventually(func() bool {
 			err := deploySa.Delete()
-
 			if err != nil {
-				glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting ServiceAccount %q in %q namespace: %v",
+				klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting ServiceAccount %q in %q namespace: %v",
 					saName, nsName, err)
 
 				return false
 			}
 
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted ServiceAccount %q in %q namespace",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted ServiceAccount %q in %q namespace",
 				saName, nsName)
 
 			return true
 		}).WithContext(ctx).WithPolling(5*time.Second).WithTimeout(1*time.Minute).Should(BeTrue(),
 			fmt.Sprintf("Failed to delete ServiceAccount %q from %q ns", saName, nsName))
 	} else {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("ServiceAccount %q not found in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("ServiceAccount %q not found in %q namespace",
 			saName, nsName)
 	}
 }
@@ -206,24 +202,23 @@ func deleteClusterRBAC(rbacName string) {
 
 	var ctx SpecContext
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert ClusterRoleBinding %q exists", rbacName)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert ClusterRoleBinding %q exists", rbacName)
 
 	if crbSa, err := rbac.PullClusterRoleBinding(
 		APIClient,
 		rbacName); err == nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("ClusterRoleBinding %q found. Deleting...", rbacName)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("ClusterRoleBinding %q found. Deleting...", rbacName)
 
 		Eventually(func() bool {
 			err := crbSa.Delete()
-
 			if err != nil {
-				glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting ClusterRoleBinding %q : %v",
+				klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting ClusterRoleBinding %q : %v",
 					rbacName, err)
 
 				return false
 			}
 
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted ClusterRoleBinding %q", rbacName)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted ClusterRoleBinding %q", rbacName)
 
 			return true
 		}).WithContext(ctx).WithPolling(5*time.Second).WithTimeout(1*time.Minute).Should(BeTrue(),
@@ -236,7 +231,7 @@ func createClusterRBAC(rbacName, clusterRole, saName, nsName string) {
 
 	var ctx SpecContext
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating ClusterRoleBinding %q", rbacName)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating ClusterRoleBinding %q", rbacName)
 	crbSa := rbac.NewClusterRoleBindingBuilder(APIClient,
 		rbacName,
 		clusterRole,
@@ -249,13 +244,13 @@ func createClusterRBAC(rbacName, clusterRole, saName, nsName string) {
 	Eventually(func() bool {
 		crbSa, err := crbSa.Create()
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof(
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof(
 				"Error Creating ClusterRoleBinding %q : %v", crbSa.Definition.Name, err)
 
 			return false
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("ClusterRoleBinding %q created:\n\t%v",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("ClusterRoleBinding %q created:\n\t%v",
 			crbSa.Definition.Name, crbSa)
 
 		return true
@@ -264,25 +259,25 @@ func createClusterRBAC(rbacName, clusterRole, saName, nsName string) {
 }
 
 func deleteConfigMap(cmName, nsName string) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert ConfigMap %q exists in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Assert ConfigMap %q exists in %q namespace",
 		cmName, nsName)
 
 	if cmBuilder, err := configmap.Pull(
 		APIClient, cmName, nsName); err == nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("configMap %q found, deleting", cmName)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("configMap %q found, deleting", cmName)
 
 		var ctx SpecContext
 
 		Eventually(func() bool {
 			err := cmBuilder.Delete()
 			if err != nil {
-				glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting configMap %q : %v",
+				klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error deleting configMap %q : %v",
 					cmName, err)
 
 				return false
 			}
 
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted configMap %q in %q namespace",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleted configMap %q in %q namespace",
 				cmName, nsName)
 
 			return true
@@ -292,7 +287,7 @@ func deleteConfigMap(cmName, nsName string) {
 }
 
 func createConfigMap(cmName, nsName string, data map[string]string) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Create ConfigMap %q in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Create ConfigMap %q in %q namespace",
 		cmName, nsName)
 
 	cmBuilder := configmap.NewBuilder(APIClient, cmName, nsName)
@@ -301,16 +296,15 @@ func createConfigMap(cmName, nsName string, data map[string]string) {
 	var ctx SpecContext
 
 	Eventually(func() bool {
-
 		cmResult, err := cmBuilder.Create()
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error creating ConfigMap %q in %q namespace",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Error creating ConfigMap %q in %q namespace",
 				cmName, nsName)
 
 			return false
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Created ConfigMap %q in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Created ConfigMap %q in %q namespace",
 			cmResult.Definition.Name, nsName)
 
 		return true
@@ -322,14 +316,14 @@ func deleteDeployments(dName, nsName string) {
 	By(fmt.Sprintf("Removing test deployment %q from %q ns", dName, nsName))
 
 	if deploy, err := deployment.Pull(APIClient, dName, nsName); err == nil {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleting deployment %q from %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deleting deployment %q from %q namespace",
 			deploy.Definition.Name, nsName)
 
 		err = deploy.DeleteAndWait(300 * time.Second)
 		Expect(err).ToNot(HaveOccurred(),
 			fmt.Sprintf("failed to delete deployment %q", dName))
 	} else {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q not found in %q namespace",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q not found in %q namespace",
 			dName, nsName)
 	}
 }
@@ -350,14 +344,14 @@ func findPodWithSelector(fNamespace, podLabel string) []*pod.Builder {
 	Eventually(func() bool {
 		podMatchingSelector, err = pod.List(APIClient, fNamespace, podOneSelector)
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to list pods in %q namespace: %v",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to list pods in %q namespace: %v",
 				fNamespace, err)
 
 			return false
 		}
 
 		if len(podMatchingSelector) == 0 {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Found 0 pods matching label %q in namespace %q",
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Found 0 pods matching label %q in namespace %q",
 				podLabel, fNamespace)
 
 			return false
@@ -371,7 +365,7 @@ func findPodWithSelector(fNamespace, podLabel string) []*pod.Builder {
 }
 
 func defineContainer(cName, cImage string, cCmd []string, cRequests, cLimits map[string]string) *pod.ContainerBuilder {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating container %q", cName)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Creating container %q", cName)
 	deployContainer := pod.NewContainerBuilder(cName, cImage, cCmd)
 
 	By("Defining SecurityContext")
@@ -396,7 +390,7 @@ func defineContainer(cName, cImage string, cCmd []string, cRequests, cLimits map
 	By("Setting SecurityContext")
 
 	deployContainer = deployContainer.WithSecurityContext(secContext)
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Container One definition: %#v", deployContainer)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Container One definition: %#v", deployContainer)
 
 	By("Dropping ALL security capability")
 
@@ -413,12 +407,12 @@ func defineContainer(cName, cImage string, cCmd []string, cRequests, cLimits map
 	deployContainer = deployContainer.WithVolumeMount(volMount)
 
 	if len(cRequests) != 0 {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Processing container's requests")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Processing container's requests")
 
 		containerRequests := corev1.ResourceList{}
 
 		for key, val := range cRequests {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing container's request: %q - %q", key, val)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing container's request: %q - %q", key, val)
 
 			containerRequests[corev1.ResourceName(key)] = resource.MustParse(val)
 		}
@@ -427,12 +421,12 @@ func defineContainer(cName, cImage string, cCmd []string, cRequests, cLimits map
 	}
 
 	if len(cLimits) != 0 {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Processing container's limits")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Processing container's limits")
 
 		containerLimits := corev1.ResourceList{}
 
 		for key, val := range cLimits {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing container's limit: %q - %q", key, val)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing container's limit: %q - %q", key, val)
 
 			containerLimits[corev1.ResourceName(key)] = resource.MustParse(val)
 		}
@@ -440,14 +434,14 @@ func defineContainer(cName, cImage string, cCmd []string, cRequests, cLimits map
 		deployContainer = deployContainer.WithCustomResourcesLimits(containerLimits)
 	}
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("%q container's  definition:\n%#v", cName, deployContainer)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("%q container's  definition:\n%#v", cName, deployContainer)
 
 	return deployContainer
 }
 
 func defineDeployment(containerConfig *corev1.Container, deployName, deployNs, sriovNet, cmName, saName string,
 	deployLabels, nodeSelector map[string]string) *deployment.Builder {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Defining deployment %q in %q ns", deployName, deployNs)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Defining deployment %q in %q ns", deployName, deployNs)
 
 	deploy := deployment.NewBuilder(APIClient, deployName, deployNs, deployLabels, *containerConfig)
 
@@ -459,13 +453,13 @@ func defineDeployment(containerConfig *corev1.Container, deployName, deployNs, s
 		&multus.NetworkSelectionElement{
 			Name: sriovNet})
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks: %#v", networksOne)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks: %#v", networksOne)
 
 	By("Adding SR-IOV annotations")
 
 	deploy = deploy.WithSecondaryNetwork(networksOne)
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV deploy one: %#v",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV deploy one: %#v",
 		deploy.Definition.Spec.Template.ObjectMeta.Annotations)
 
 	By("Adding NodeSelector to the deployment")
@@ -491,7 +485,7 @@ func defineDeployment(containerConfig *corev1.Container, deployName, deployNs, s
 
 	deploy = deploy.WithVolume(volDefinition)
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV One Volume:\n %v",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV One Volume:\n %v",
 		deploy.Definition.Spec.Template.Spec.Volumes)
 
 	By(fmt.Sprintf("Assigning ServiceAccount %q to the deployment", saName))
@@ -506,7 +500,7 @@ func defineDeployment(containerConfig *corev1.Container, deployName, deployNs, s
 		By("Adding TaintToleration")
 
 		for _, toleration := range RDSCoreConfig.WlkdTolerationList {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Adding toleration: %v", toleration)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Adding toleration: %v", toleration)
 
 			deploy = deploy.WithToleration(toleration)
 		}
@@ -516,7 +510,7 @@ func defineDeployment(containerConfig *corev1.Container, deployName, deployNs, s
 }
 
 func verifyMsgInPodLogs(podObj *pod.Builder, msg, cName string, timeSpan time.Time) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing duration %q", timeSpan)
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Parsing duration %q", timeSpan)
 
 	var (
 		podLog string
@@ -526,7 +520,7 @@ func verifyMsgInPodLogs(podObj *pod.Builder, msg, cName string, timeSpan time.Ti
 
 	Eventually(func() bool {
 		logStartTimestamp := time.Since(timeSpan)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("\tTime duration is %s", logStartTimestamp)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("\tTime duration is %s", logStartTimestamp)
 
 		if logStartTimestamp.Abs().Seconds() < 1 {
 			logStartTimestamp, err = time.ParseDuration("1s")
@@ -534,14 +528,13 @@ func verifyMsgInPodLogs(podObj *pod.Builder, msg, cName string, timeSpan time.Ti
 		}
 
 		podLog, err = podObj.GetLog(logStartTimestamp, cName)
-
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to get logs from pod %q: %v", podObj.Definition.Name, err)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to get logs from pod %q: %v", podObj.Definition.Name, err)
 
 			return false
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Logs from pod %s:\n%s", podObj.Definition.Name, podLog)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Logs from pod %s:\n%s", podObj.Definition.Name, podLog)
 
 		return true
 	}).WithContext(ctx).WithPolling(5*time.Second).WithTimeout(1*time.Minute).Should(BeTrue(),
@@ -559,14 +552,14 @@ func verifySRIOVConnectivity(nsOneName, nsTwoName, deployOneLabels, deployTwoLab
 
 	By("Getting pods backed by deployment")
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Looking for pod(s) matching label %q in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Looking for pod(s) matching label %q in %q namespace",
 		deployOneLabels, nsOneName)
 
 	podOneList := findPodWithSelector(nsOneName, deployOneLabels)
 	Expect(len(podOneList)).To(Equal(1), "Expected only one pod")
 
 	podOne := podOneList[0]
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod one is %q on node %q",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod one is %q on node %q",
 		podOne.Definition.Name, podOne.Definition.Spec.NodeName)
 
 	By(fmt.Sprintf("Waiting for pod %q to get Ready", podOne.Definition.Name))
@@ -576,14 +569,14 @@ func verifySRIOVConnectivity(nsOneName, nsTwoName, deployOneLabels, deployTwoLab
 	Expect(err).ToNot(HaveOccurred(), fmt.Sprintf("Pod %q in %q ns is not Ready",
 		podOne.Definition.Name, podOne.Definition.Namespace))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Looking for pod(s) matching label %q in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Looking for pod(s) matching label %q in %q namespace",
 		deployTwoLabels, nsTwoName)
 
 	podTwoList := findPodWithSelector(nsTwoName, deployTwoLabels)
 	Expect(len(podTwoList)).To(Equal(1), "Expected only one pod")
 
 	podTwo := podTwoList[0]
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod two is %q on node %q",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Pod two is %q on node %q",
 		podTwo.Definition.Name, podTwo.Definition.Spec.NodeName)
 
 	By(fmt.Sprintf("Waiting for pod %q to get Ready", podTwo.Definition.Name))
@@ -600,7 +593,7 @@ func verifySRIOVConnectivity(nsOneName, nsTwoName, deployOneLabels, deployTwoLab
 		podOne.Definition.Spec.NodeName,
 		time.Now().Unix())
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Sending msg %q from pod %s",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Sending msg %q from pod %s",
 		msgOne, podOne.Definition.Name)
 
 	sendDataOneCmd := []string{"/bin/bash", "-c",
@@ -610,18 +603,17 @@ func verifySRIOVConnectivity(nsOneName, nsTwoName, deployOneLabels, deployTwoLab
 
 	Eventually(func() bool {
 		podOneResult, err = podOne.ExecCommand(sendDataOneCmd, podOne.Definition.Spec.Containers[0].Name)
-
 		if err != nil {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to run command within pod: %v", sendDataOneCmd)
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to run command within pod: %v", err)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to run command within pod: %v", sendDataOneCmd)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Failed to run command within pod: %v", err)
 
 			return false
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Successfully run command %v within container", sendDataOneCmd)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Successfully run command within container %q",
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Successfully run command %v within container", sendDataOneCmd)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Successfully run command within container %q",
 			podOne.Definition.Spec.Containers[0].Name)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Result: %v - %s", podOneResult, &podOneResult)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Result: %v - %s", podOneResult, &podOneResult)
 
 		return true
 	}).WithContext(ctx).WithPolling(5*time.Second).WithTimeout(5*time.Minute).Should(BeTrue(),
@@ -645,7 +637,7 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 	optionSet, ok := getSRIOVConfigOption(SriovOperatorConfig, "resourceInjectorMatchCondition")
 
 	if !ok || !optionSet {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
 
 		Skip("Option 'resourceInjectorMatchCondition' not defined or enabled")
 	}
@@ -657,7 +649,7 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy1OneName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy1OneName, RDSCoreConfig.WlkdSRIOVOneNS)
 
 	Eventually(func() bool {
@@ -665,12 +657,11 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeployOneLabel})
 
 		return len(oldPods) == 0
-
 	}, 6*time.Minute, 3*time.Second).WithContext(ctx).Should(BeTrue(), "pods matching label() still present")
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy1TwoName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy1TwoName, RDSCoreConfig.WlkdSRIOVOneNS)
 
 	Eventually(func() bool {
@@ -678,7 +669,6 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeployTwoLabel})
 
 		return len(oldPods) == 0
-
 	}, 6*time.Minute, 3*time.Second).WithContext(ctx).Should(BeTrue(), "pods matching label() still present")
 
 	By("Removing ConfigMap")
@@ -741,7 +731,7 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy1OneName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deploy.Definition.Name, deploy.Definition.Namespace)
 
 	By("Defining 2nd deployment")
@@ -764,22 +754,22 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy1TwoName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deployTwo.Definition.Name, deployTwo.Definition.Namespace)
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeployOneTargetAddress,
 		RDSCoreConfig.WlkdSRIOVDeployOneTargetAddressIPv6}
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -794,12 +784,12 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -820,17 +810,17 @@ func VerifySRIOVWorkloadsOnSameNode(ctx SpecContext) {
 //nolint:funlen
 func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet21) == "" || strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet22) == "" {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet21)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet22)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet21)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet22)
 
 		Skip("SR-IOV networks cannot be empty")
 	}
 
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet21) != strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet22) {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are not the same")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet21)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet22)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are not the same")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet21)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet22)
 
 		Skip("SR-IOV networks are not the same")
 	}
@@ -846,7 +836,7 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 	optionSet, ok := getSRIOVConfigOption(SriovOperatorConfig, "resourceInjectorMatchCondition")
 
 	if !ok || !optionSet {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
 
 		Skip("Option 'resourceInjectorMatchCondition' not defined or enabled")
 	}
@@ -858,7 +848,7 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy2OneName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy2OneName, RDSCoreConfig.WlkdSRIOVOneNS)
 
 	Eventually(func() bool {
@@ -866,12 +856,11 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy2OneLabel})
 
 		return len(oldPods) == 0
-
 	}, 6*time.Minute, 3*time.Second).WithContext(ctx).Should(BeTrue(), "pods matching label() still present")
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy2TwoName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy2TwoName, RDSCoreConfig.WlkdSRIOVOneNS)
 
 	Eventually(func() bool {
@@ -879,7 +868,6 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy2TwoLabel})
 
 		return len(oldPods) == 0
-
 	}, 6*time.Minute, 3*time.Second).WithContext(ctx).Should(BeTrue(), "pods matching label() still present")
 
 	By("Removing ConfigMap")
@@ -942,7 +930,7 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy2OneName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q in %q ns is Ready",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q in %q ns is Ready",
 		deploy.Definition.Name, deploy.Definition.Namespace)
 
 	By("Defining 2nd deployment")
@@ -965,7 +953,7 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy2TwoName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q in %q ns is Ready",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q in %q ns is Ready",
 		deployTwo.Definition.Name, deployTwo.Definition.Namespace)
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy2OneTargetAddress,
@@ -973,12 +961,12 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -993,12 +981,12 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -1011,19 +999,19 @@ func VerifySRIOVWorkloadsOnDifferentNodes(ctx SpecContext) {
 
 // VerifySRIOVConnectivityBetweenDifferentNodes test connectivity after cluster's reboot.
 func VerifySRIOVConnectivityBetweenDifferentNodes(ctx SpecContext) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on different node")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on different node")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy2OneTargetAddress,
 		RDSCoreConfig.WlkdSRIOVDeploy2OneTargetAddressIPv6}
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -1038,12 +1026,12 @@ func VerifySRIOVConnectivityBetweenDifferentNodes(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -1056,19 +1044,19 @@ func VerifySRIOVConnectivityBetweenDifferentNodes(ctx SpecContext) {
 
 // VerifySRIOVConnectivityOnSameNode tests connectivity after cluster's reboot.
 func VerifySRIOVConnectivityOnSameNode(ctx SpecContext) {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeployOneTargetAddress,
 		RDSCoreConfig.WlkdSRIOVDeployOneTargetAddressIPv6}
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -1083,12 +1071,12 @@ func VerifySRIOVConnectivityOnSameNode(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOVOneNS,
@@ -1102,7 +1090,7 @@ func VerifySRIOVConnectivityOnSameNode(ctx SpecContext) {
 // VerifySRIOVConnectivityOnSameNodeAndDifferentNets verifies connectivity between workloads
 // scheduled on the same node and on different SR-IOV networks.
 func VerifySRIOVConnectivityOnSameNodeAndDifferentNets() {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof(
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof(
 		"Verify connectivity between SR-IOV workloads on the same node and different SR-IOV networks")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy3OneTargetAddress,
@@ -1110,12 +1098,12 @@ func VerifySRIOVConnectivityOnSameNodeAndDifferentNets() {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV3NS,
@@ -1130,12 +1118,12 @@ func VerifySRIOVConnectivityOnSameNodeAndDifferentNets() {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV3NS,
@@ -1151,17 +1139,17 @@ func VerifySRIOVConnectivityOnSameNodeAndDifferentNets() {
 //nolint:funlen
 func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet31) == "" || strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet32) == "" {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet31)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet32)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet31)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet32)
 
 		Skip("SR-IOV networks cannot be empty")
 	}
 
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet31) == strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet32) {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are the same but should be different")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet31)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet32)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are the same but should be different")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet31)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet32)
 
 		Skip("SR-IOV networks are the same but should be different")
 	}
@@ -1177,7 +1165,7 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 	optionSet, ok := getSRIOVConfigOption(SriovOperatorConfig, "resourceInjectorMatchCondition")
 
 	if !ok || !optionSet {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
 
 		Skip("Option 'resourceInjectorMatchCondition' not defined or enabled")
 	}
@@ -1189,7 +1177,7 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy3OneName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy3OneName, RDSCoreConfig.WlkdSRIOV3NS)
 
 	Eventually(func() bool {
@@ -1197,13 +1185,12 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy3OneLabel})
 
 		return len(oldPods) == 0
-
 	}).WithContext(ctx).WithPolling(3*time.Second).WithTimeout(6*time.Minute).Should(BeTrue(),
 		"pods matching label() still present")
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy3TwoName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy3TwoName, RDSCoreConfig.WlkdSRIOV3NS)
 
 	Eventually(func() bool {
@@ -1211,7 +1198,6 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy3TwoLabel})
 
 		return len(oldPods) == 0
-
 	}).WithContext(ctx).WithPolling(3*time.Second).WithTimeout(6*time.Minute).Should(BeTrue(),
 		"pods matching label() still present")
 
@@ -1279,7 +1265,7 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy3OneName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deploy.Definition.Name, deploy.Definition.Namespace)
 
 	By("Defining 2nd deployment")
@@ -1302,22 +1288,22 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy3TwoName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deployTwo.Definition.Name, deployTwo.Definition.Namespace)
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy3OneTargetAddress,
 		RDSCoreConfig.WlkdSRIOVDeploy3OneTargetAddressIPv6}
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV3NS,
@@ -1332,12 +1318,12 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV3NS,
@@ -1351,7 +1337,7 @@ func VerifySRIOVWorkloadsOnSameNodeDifferentNet(ctx SpecContext) {
 // VerifySRIOVConnectivityOnDifferentNodesAndDifferentNetworks verifies connectivity between workloads
 // running on different SR-IOV networks and different nodes.
 func VerifySRIOVConnectivityOnDifferentNodesAndDifferentNetworks() {
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof(
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof(
 		"Verify connectivity between SR-IOV workloads on different nodes and different SR-IOV networks")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy4OneTargetAddress,
@@ -1359,12 +1345,12 @@ func VerifySRIOVConnectivityOnDifferentNodesAndDifferentNetworks() {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV4NS,
@@ -1379,12 +1365,12 @@ func VerifySRIOVConnectivityOnDifferentNodesAndDifferentNetworks() {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV4NS,
@@ -1400,17 +1386,17 @@ func VerifySRIOVConnectivityOnDifferentNodesAndDifferentNetworks() {
 //nolint:funlen
 func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet41) == "" || strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet42) == "" {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet41)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet42)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks cannot be empty")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet41)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet42)
 
 		Skip("SR-IOV networks cannot be empty")
 	}
 
 	if strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet41) == strings.TrimSpace(RDSCoreConfig.WlkdSRIOVNet42) {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are the same but should be different")
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet41)
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet42)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SR-IOV networks are the same but should be different")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 1: %s", RDSCoreConfig.WlkdSRIOVNet41)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("SRIOV Network 2: %s", RDSCoreConfig.WlkdSRIOVNet42)
 
 		Skip("SR-IOV networks are the same but should be different")
 	}
@@ -1426,7 +1412,7 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 	optionSet, ok := getSRIOVConfigOption(SriovOperatorConfig, "resourceInjectorMatchCondition")
 
 	if !ok || !optionSet {
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Option 'resourceInjectorMatchCondition' not defined or disabled")
 
 		Skip("Option 'resourceInjectorMatchCondition' not defined or enabled")
 	}
@@ -1438,7 +1424,7 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy4OneName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy4OneName, RDSCoreConfig.WlkdSRIOV4NS)
 
 	Eventually(func() bool {
@@ -1446,13 +1432,12 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy4OneLabel})
 
 		return len(oldPods) == 0
-
 	}).WithContext(ctx).WithPolling(3*time.Second).WithTimeout(6*time.Minute).Should(BeTrue(),
 		"pods matching label() still present")
 
 	By(fmt.Sprintf("Ensuring pods from %q deployment are gone", sriovDeploy4TwoName))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Ensuring pods from %q deployment in %q namespace are gone",
 		sriovDeploy4TwoName, RDSCoreConfig.WlkdSRIOV4NS)
 
 	Eventually(func() bool {
@@ -1460,7 +1445,6 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 			metav1.ListOptions{LabelSelector: sriovDeploy4TwoLabel})
 
 		return len(oldPods) == 0
-
 	}).WithContext(ctx).WithPolling(3*time.Second).WithTimeout(6*time.Minute).Should(BeTrue(),
 		"pods matching label() still present")
 
@@ -1528,7 +1512,7 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy4OneName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deploy.Definition.Name, deploy.Definition.Namespace)
 
 	By("Defining 2nd deployment")
@@ -1551,22 +1535,22 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 	Expect(err).ToNot(HaveOccurred(),
 		fmt.Sprintf("Failed to create deployment %s: %v", sriovDeploy4TwoName, err))
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Deployment %q created in %q namespace",
 		deployTwo.Definition.Name, deployTwo.Definition.Namespace)
 
-	glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
+	klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Verify connectivity between SR-IOV workloads on the same node")
 
 	addressesList := []string{RDSCoreConfig.WlkdSRIOVDeploy4OneTargetAddress,
 		RDSCoreConfig.WlkdSRIOVDeploy4OneTargetAddressIPv6}
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV4NS,
@@ -1581,12 +1565,12 @@ func VerifySRIOVWorkloadsOnDifferentNodesDifferentNet(ctx SpecContext) {
 
 	for _, targetAddress := range addressesList {
 		if targetAddress == "" {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Skipping empty address %q", targetAddress)
 
 			continue
 		}
 
-		glog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
+		klog.V(rdscoreparams.RDSCoreLogLevel).Infof("Access workload via %q", targetAddress)
 
 		verifySRIOVConnectivity(
 			RDSCoreConfig.WlkdSRIOV4NS,
@@ -1602,9 +1586,9 @@ func VerifySRIOVSuite() {
 	Describe(
 		"SR-IOV verification",
 		Label(rdscoreparams.LabelValidateSRIOV), func() {
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("*******************************************")
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("*** Starting SR-IOV RDS Core Test Suite ***")
-			glog.V(rdscoreparams.RDSCoreLogLevel).Infof("*******************************************")
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("*******************************************")
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("*** Starting SR-IOV RDS Core Test Suite ***")
+			klog.V(rdscoreparams.RDSCoreLogLevel).Infof("*******************************************")
 
 			It("Verifices SR-IOV workloads on the same node",
 				Label("sriov-same-node"), reportxml.ID("71949"), MustPassRepeatedly(3),

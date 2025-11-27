@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/deployment"
@@ -30,6 +29,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -790,7 +790,6 @@ func isPciAddressAvailable(clientPod *pod.Builder) bool {
 	var err error
 
 	pciAddressList, err := getPCIAddressListFromSrIovNetworkName(podNetAnnotation)
-
 	if err != nil {
 		return false
 	}
@@ -804,8 +803,8 @@ func isPciAddressAvailable(clientPod *pod.Builder) bool {
 
 func getPCIAddressListFromSrIovNetworkName(podNetworkStatus string) ([]string, error) {
 	var podNetworkStatusType []podNetworkAnnotation
-	err := json.Unmarshal([]byte(podNetworkStatus), &podNetworkStatusType)
 
+	err := json.Unmarshal([]byte(podNetworkStatus), &podNetworkStatusType)
 	if err != nil {
 		return nil, err
 	}
@@ -885,7 +884,6 @@ func fetchNewDeploymentPod(deploymentPodPrefix string) *pod.Builder {
 		}
 
 		return false
-
 	}, time.Minute, 300*time.Second).Should(BeTrue(), "Failed to collect deployment pods")
 
 	err := deploymentPod.WaitUntilRunning(300 * time.Second)
@@ -920,7 +918,6 @@ func testRouteInjection(clientPod *pod.Builder, nextHopInterface string) {
 func discoverNICVendor(srIovInterfaceUnderTest, workerNodeName string) (string, error) {
 	upSrIovInterfaces, err := sriov.NewNetworkNodeStateBuilder(
 		APIClient, workerNodeName, NetConfig.SriovOperatorNamespace).GetUpNICs()
-
 	if err != nil {
 		return "", err
 	}
@@ -929,11 +926,11 @@ func discoverNICVendor(srIovInterfaceUnderTest, workerNodeName string) (string, 
 		if srIovInterface.Name == srIovInterfaceUnderTest {
 			switch srIovInterface.Vendor {
 			case mlxVendorID:
-				glog.V(90).Infof("Mellanox NIC detected")
+				klog.V(90).Infof("Mellanox NIC detected")
 
 				return mlxVendorID, nil
 			case intelVendorID:
-				glog.V(90).Infof("Intel NIC detected")
+				klog.V(90).Infof("Intel NIC detected")
 
 				return intelVendorID, nil
 			default:

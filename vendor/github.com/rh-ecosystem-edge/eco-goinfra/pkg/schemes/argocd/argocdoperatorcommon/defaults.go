@@ -70,7 +70,7 @@ const (
 	ArgoCDDefaultArgoImage = "quay.io/argoproj/argocd"
 
 	// ArgoCDDefaultArgoVersion is the Argo CD container image digest to use when version not specified.
-	ArgoCDDefaultArgoVersion = "sha256:a36ab0c0860c77159c16e04c7e786e7a282f04889ba9318052f0b8897d6d2040" // v3.1.1
+	ArgoCDDefaultArgoVersion = "sha256:9c33285c0b86a66e9cf9fcafc448e48e0ab7c4678b20b3723556bb6cce8ea0b9" // v3.1.9
 
 	// ArgoCDDefaultBackupKeyLength is the length of the generated default backup key.
 	ArgoCDDefaultBackupKeyLength = 32
@@ -191,10 +191,10 @@ const (
 	ArgoCDDefaultRedisSuffix = "redis"
 
 	// ArgoCDDefaultRedisVersion is the Redis container image tag to use when not specified.
-	ArgoCDDefaultRedisVersion = "sha256:ddd16a9b1575a774c7e62956be8daa1de5b32cfb5c25b7a216aefed8e0919f9b" // 7.2.7-alpine
+	ArgoCDDefaultRedisVersion = "sha256:1a34bdba051ecd8a58ec8a3cc460acef697a1605e918149cc53d920673c1a0a7" // 7.2.11-alpine
 
 	// ArgoCDDefaultRedisVersionHA is the Redis container image tag to use when not specified in HA mode.
-	ArgoCDDefaultRedisVersionHA = "sha256:ddd16a9b1575a774c7e62956be8daa1de5b32cfb5c25b7a216aefed8e0919f9b" // 7.2.7-alpine
+	ArgoCDDefaultRedisVersionHA = "sha256:1a34bdba051ecd8a58ec8a3cc460acef697a1605e918149cc53d920673c1a0a7" // 7.2.11-alpine
 
 	// ArgoCDDefaultRepoMetricsPort is the default listen port for the Argo CD repo server metrics.
 	ArgoCDDefaultRepoMetricsPort = 8084
@@ -287,8 +287,17 @@ vs-ssh.visualstudio.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Hr1oTWqNqOlzGJOf
 	// ArgoCDCmdParamsConfigMapName is the upstream hard-coded ArgoCD command params ConfigMap name.
 	ArgoCDCmdParamsConfigMapName = "argocd-cmd-params-cm"
 
-	// ArgoCDAgentPrincipalDefaultImageName is the default image name for the ArgoCD agent principal.
+	// ArgoCDAgentPrincipalDefaultImageName is the default image name for the ArgoCD agent's principal component.
 	ArgoCDAgentPrincipalDefaultImageName = "quay.io/argoprojlabs/argocd-agent:v0.3.2"
+
+	// ArgoCDAgentAgentDefaultImageName is the default image name for the ArgoCD agent's agent component.
+	ArgoCDAgentAgentDefaultImageName = "quay.io/argoprojlabs/argocd-agent:v0.3.2"
+
+	// ArgoCDImageUpdaterControllerComponent is the name of the Image Updater controller control plane component
+	ArgoCDImageUpdaterControllerComponent = "argocd-image-updater-controller"
+
+	// DefaultImagePullPolicy is the default image pull policy to use when not specified.
+	DefaultImagePullPolicy = "IfNotPresent"
 )
 
 // DefaultLabels returns the default set of labels for controllers.

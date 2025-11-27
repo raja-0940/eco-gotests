@@ -28,7 +28,7 @@ The flags are:
 		Directory to output static site to. Will not be generated if left blank
 
 	-v int
-		Log level verbosity for glog. Use 100 for logging all messages or leave blank for none
+		Log level verbosity for klog. Use 100 for logging all messages or leave blank for none
 */
 package main
 
@@ -43,7 +43,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/go-logr/logr"
+	"k8s.io/klog/v2"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var (
@@ -72,6 +74,12 @@ func init() {
 		shorthand = " (shorthand)"
 	)
 
+	klog.InitFlags(nil)
+	klog.EnableContextualLogging(true)
+	logf.SetLogger(logr.Discard())
+
+	_ = flag.Set("logtostderr", "true")
+
 	flag.BoolVar(&help, "help", defaultHelp, helpUsage)
 	flag.BoolVar(&help, "h", defaultHelp, helpUsage+shorthand)
 
@@ -89,9 +97,6 @@ func init() {
 }
 
 func main() {
-	// Also send glog messages to stderr
-	_ = flag.Lookup("logtostderr").Value.Set("true")
-
 	flag.Parse()
 
 	if help {
@@ -103,7 +108,7 @@ func main() {
 	if clean {
 		err := CleanCache()
 		if err != nil {
-			glog.Errorf("Failed to clean cache: %v", err)
+			klog.Errorf("Failed to clean cache: %v", err)
 
 			os.Exit(1)
 		}
@@ -113,7 +118,7 @@ func main() {
 
 	treeMap, err := getTrees(branch)
 	if err != nil {
-		glog.Errorf("Failed to get suite trees when branch=\"%s\": %v", branch, err)
+		klog.Errorf("Failed to get suite trees when branch=\"%s\": %v", branch, err)
 
 		os.Exit(1)
 	}
@@ -123,7 +128,7 @@ func main() {
 	if output != "" {
 		err := templateTreeMap(treeMap, output)
 		if err != nil {
-			glog.Errorf("Failed to template tree map and save to %s: %v", output, err)
+			klog.Errorf("Failed to template tree map and save to %s: %v", output, err)
 
 			os.Exit(1)
 		}
@@ -187,7 +192,7 @@ func templateTreeMap(treeMap map[CacheKey]*SuiteTree, output string) error {
 			Generated:  time.Now(),
 			Branch:     key.Branch,
 			ActionURL:  template.URL(actionURL),
-			RepoURL:    "https://github.com/openshift-kni/eco-gotests",
+			RepoURL:    RemoteURL,
 			TimeFormat: time.RFC3339,
 		}
 		outputFileName := fmt.Sprintf("report_%s.html", key.Branch)
@@ -211,7 +216,7 @@ func templateTreeMap(treeMap map[CacheKey]*SuiteTree, output string) error {
 		BranchReports: branchReports,
 		Generated:     time.Now(),
 		ActionURL:     template.URL(actionURL),
-		RepoURL:       "https://github.com/openshift-kni/eco-gotests",
+		RepoURL:       RemoteURL,
 		TimeFormat:    time.RFC3339,
 	}
 	outputFilePath := filepath.Join(output, "report.html")
@@ -227,7 +232,7 @@ func templateTreeMap(treeMap map[CacheKey]*SuiteTree, output string) error {
 func getLocalTreeMap(cache *Cache, repoPath string) (map[CacheKey]*SuiteTree, error) {
 	tree, err := cache.GetOrCreate(repoPath)
 	if err != nil {
-		glog.Errorf("Failed to get or create SuiteTree from cache: %v", err)
+		klog.Errorf("Failed to get or create SuiteTree from cache: %v", err)
 
 		return nil, err
 	}
@@ -264,14 +269,14 @@ func getFromCacheOrClone(ctx context.Context, cache *Cache, patterns []string) (
 			continue
 		}
 
-		repoPath, err := CloneRepo(ctx, tempDir, remoteURL, key.Branch)
+		repoPath, err := CloneRepo(ctx, tempDir, RemoteURL, key.Branch)
 		if err != nil {
 			return nil, err
 		}
 
 		tree, err := cache.GetOrCreate(repoPath)
 		if err != nil {
-			glog.Errorf("Failed to get or create SuiteTree from cache: %v", err)
+			klog.Errorf("Failed to get or create SuiteTree from cache: %v", err)
 
 			return nil, err
 		}

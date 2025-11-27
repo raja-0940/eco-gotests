@@ -3,13 +3,13 @@ package frr
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"strings"
-
-	"github.com/golang/glog"
 
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/pod"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/core/network/internal/netparam"
 	"github.com/rh-ecosystem-edge/eco-gotests/tests/cnf/core/network/metallb/internal/tsparams"
+	"k8s.io/klog/v2"
 )
 
 type (
@@ -177,6 +177,51 @@ func DefineBGPConfig(localBGPASN, remoteBGPASN int, neighborsIPAddresses []strin
 	return bgpConfig
 }
 
+// DefineBGPConfigWithIPv4AndIPv6 returns string which represents BGP config file peering to all given IP addresses.
+func DefineBGPConfigWithIPv4AndIPv6(localBGPASN, remoteBGPASN int, neighborsIPAddresses []string,
+	multiHop, bfd bool) string {
+	bgpConfig := tsparams.FRRBaseConfig +
+		fmt.Sprintf("router bgp %d\n", localBGPASN) +
+		tsparams.FRRDefaultBGPPreConfig
+
+	for _, ipAddress := range neighborsIPAddresses {
+		bgpConfig += fmt.Sprintf("  neighbor %s remote-as %d\n  neighbor %s password %s\n",
+			ipAddress, remoteBGPASN, ipAddress, tsparams.BGPPassword)
+
+		if bfd {
+			bgpConfig += fmt.Sprintf("  neighbor %s bfd\n", ipAddress)
+		}
+
+		if multiHop {
+			bgpConfig += fmt.Sprintf("  neighbor %s ebgp-multihop 2\n", ipAddress)
+		}
+	}
+
+	bgpConfig += "!\naddress-family ipv4 unicast\n"
+
+	for _, ipAddress := range neighborsIPAddresses {
+		if net.ParseIP(ipAddress).To4() == nil {
+			continue
+		}
+
+		bgpConfig += fmt.Sprintf("  neighbor %s activate\n", ipAddress)
+	}
+
+	bgpConfig += "exit-address-family\n!\naddress-family ipv6 unicast\n"
+
+	for _, ipAddress := range neighborsIPAddresses {
+		if net.ParseIP(ipAddress).To4() != nil {
+			continue
+		}
+
+		bgpConfig += fmt.Sprintf("  neighbor %s activate\n", ipAddress)
+	}
+
+	bgpConfig += "exit-address-family\n!\nline vty\n!\nend\n"
+
+	return bgpConfig
+}
+
 // DefineBGPConfigWithStaticRouteAndNetwork defines BGP config file with static route and network.
 //
 //nolint:goconst
@@ -265,6 +310,40 @@ func DefineBGPConfigWithIPv4Network(localBGPASN, remoteBGPASN int,
 	return bgpConfig
 }
 
+// DefineBGPConfigWithIPv6Network defines BGP config file with network advertising only ipv6.
+func DefineBGPConfigWithIPv6Network(localBGPASN, remoteBGPASN int,
+	advertisedIPv6Routes, neighborsIPAddresses []string,
+	multiHop, bfd bool) string {
+	bgpConfig := tsparams.FRRBaseConfig +
+		fmt.Sprintf("router bgp %d\n", localBGPASN) +
+		tsparams.FRRDefaultBGPPreConfig
+
+	for _, ipAddress := range neighborsIPAddresses {
+		bgpConfig += fmt.Sprintf("  neighbor %s remote-as %d\n  neighbor %s password %s\n",
+			ipAddress, remoteBGPASN, ipAddress, tsparams.BGPPassword)
+
+		if bfd {
+			bgpConfig += fmt.Sprintf("  neighbor %s bfd\n", ipAddress)
+		}
+
+		if multiHop {
+			bgpConfig += fmt.Sprintf("  neighbor %s ebgp-multihop 2\n", ipAddress)
+		}
+	}
+
+	bgpConfig += "!\naddress-family ipv6 unicast\n"
+	for _, ipAddress := range neighborsIPAddresses {
+		bgpConfig += fmt.Sprintf("  neighbor %s activate\n", ipAddress)
+	}
+
+	bgpConfig += fmt.Sprintf("  network %s\n", advertisedIPv6Routes[0])
+	bgpConfig += fmt.Sprintf("  network %s\n", advertisedIPv6Routes[1])
+
+	bgpConfig += "exit-address-family\n!\nline vty\n!\nend\n"
+
+	return bgpConfig
+}
+
 // BGPNeighborshipHasState verifies that BGP session on a pod has given state.
 func BGPNeighborshipHasState(frrPod *pod.Builder, neighborIPAddress string, state string) (bool, error) {
 	var result map[string]bgpDescription
@@ -302,7 +381,6 @@ func IsProtocolConfigured(frrPod *pod.Builder, protocol string) (bool, error) {
 // GetMetricsByPrefix pulls all metrics from frr pods and sort them in the list by given prefix.
 func GetMetricsByPrefix(frrPod *pod.Builder, metricPrefix string) ([]string, error) {
 	stdout, err := frrPod.ExecCommand([]string{"curl", "localhost:7573/metrics"}, "frr")
-
 	if err != nil {
 		return nil, err
 	}
@@ -333,13 +411,13 @@ func SetStaticRoute(frrPod *pod.Builder, action, destIP string, nextHopMap map[s
 		[]string{"ip", "route", action, destIP, "via", nextHopMap[frrPod.Definition.Spec.NodeName]}, "frr")
 	if err != nil {
 		if strings.Contains(buffer.String(), "File exists") {
-			glog.V(90).Infof("Warning: Route to %s already exist", destIP)
+			klog.V(90).Infof("Warning: Route to %s already exist", destIP)
 
 			return buffer.String(), nil
 		}
 
 		if strings.Contains(buffer.String(), "No such process") {
-			glog.V(90).Infof("Warning: Route to %s already absent", destIP)
+			klog.V(90).Infof("Warning: Route to %s already absent", destIP)
 
 			return buffer.String(), nil
 		}
@@ -352,14 +430,14 @@ func SetStaticRoute(frrPod *pod.Builder, action, destIP string, nextHopMap map[s
 
 // GetBGPStatus returns bgp status output from frr pod.
 func GetBGPStatus(frrPod *pod.Builder, protocolVersion string, containerName ...string) (*bgpStatus, error) {
-	glog.V(90).Infof("Getting bgp status from pod: %s", frrPod.Definition.Name)
+	klog.V(90).Infof("Getting bgp status from pod: %s", frrPod.Definition.Name)
 
 	return getBgpStatus(frrPod, fmt.Sprintf("show bgp %s json", protocolVersion), containerName...)
 }
 
 // GetBGPCommunityStatus returns bgp community status from frr pod.
 func GetBGPCommunityStatus(frrPod *pod.Builder, communityString, ipProtocolVersion string) (*bgpStatus, error) {
-	glog.V(90).Infof("Getting bgp community status from container on pod: %s", frrPod.Definition.Name)
+	klog.V(90).Infof("Getting bgp community status from container on pod: %s", frrPod.Definition.Name)
 
 	return getBgpStatus(frrPod, fmt.Sprintf("show bgp %s community %s json", ipProtocolVersion, communityString))
 }
@@ -377,8 +455,8 @@ func FetchBGPConnectTimeValue(frrk8sPods []*pod.Builder, bgpPeerIP string) (int,
 
 		// Parsing JSON
 		var bgpData map[string]BGPConnectionInfo
-		err = json.Unmarshal(output.Bytes(), &bgpData)
 
+		err = json.Unmarshal(output.Bytes(), &bgpData)
 		if err != nil {
 			return 0, fmt.Errorf("error parsing BGP neighbor JSON for pod %s: %w", frrk8sPod.Definition.Name, err)
 		}
@@ -394,7 +472,7 @@ func FetchBGPConnectTimeValue(frrk8sPods []*pod.Builder, bgpPeerIP string) (int,
 
 // ValidateBGPRemoteAS validates the remoteAS value for the specified BGP peer across all FRR pods.
 func ValidateBGPRemoteAS(frrk8sPods []*pod.Builder, bgpPeerIP string, expectedRemoteAS int) error {
-	glog.V(90).Infof("Validating the frr nodes receive the correct remote bgp peer AS : %d", expectedRemoteAS)
+	klog.V(90).Infof("Validating the frr nodes receive the correct remote bgp peer AS : %d", expectedRemoteAS)
 
 	for _, frrk8sPod := range frrk8sPods {
 		// Run the "show bgp neighbor <bgpPeerIP> json" command on each pod
@@ -407,8 +485,8 @@ func ValidateBGPRemoteAS(frrk8sPods []*pod.Builder, bgpPeerIP string, expectedRe
 
 		// Parsing JSON
 		var bgpData map[string]BGPConnectionInfo
-		err = json.Unmarshal(output.Bytes(), &bgpData)
 
+		err = json.Unmarshal(output.Bytes(), &bgpData)
 		if err != nil {
 			return fmt.Errorf("error parsing BGP neighbor JSON for pod %s: %w", frrk8sPod.Definition.Name, err)
 		}
@@ -432,10 +510,9 @@ func getBgpStatus(frrPod *pod.Builder, cmd string, containerName ...string) (*bg
 		cName = containerName[0]
 	}
 
-	glog.V(90).Infof("Getting bgp status from container: %s of pod: %s", cName, frrPod.Definition.Name)
+	klog.V(90).Infof("Getting bgp status from container: %s of pod: %s", cName, frrPod.Definition.Name)
 
 	bgpStateOut, err := frrPod.ExecCommand(append(netparam.VtySh, cmd))
-
 	if err != nil {
 		return nil, err
 	}
@@ -444,7 +521,7 @@ func getBgpStatus(frrPod *pod.Builder, cmd string, containerName ...string) (*bg
 
 	err = json.Unmarshal(bgpStateOut.Bytes(), &bgpStatus)
 	if err != nil {
-		glog.V(90).Infof("Failed to Unmarshal bgpStatus string: %s in to bgpStatus struct", bgpStateOut.String())
+		klog.V(90).Infof("Failed to Unmarshal bgpStatus string: %s in to bgpStatus struct", bgpStateOut.String())
 
 		return nil, err
 	}
@@ -455,12 +532,11 @@ func getBgpStatus(frrPod *pod.Builder, cmd string, containerName ...string) (*bg
 // GetGracefulRestartStatus fetches and returns the GracefulRestart status value for the
 // specified BGP peer in the default VRF.
 func GetGracefulRestartStatus(frrPod *pod.Builder, neighborIP string) (GRStatus, error) {
-	glog.V(90).Infof("Getting GracefulRestart status from container: %s of pod: %s", "frr", frrPod.Definition.Name)
+	klog.V(90).Infof("Getting GracefulRestart status from container: %s of pod: %s", "frr", frrPod.Definition.Name)
 
 	grStateOut, err := frrPod.ExecCommand(append(netparam.VtySh, "sh bgp neighbors graceful-restart json"))
-
 	if err != nil {
-		glog.V(90).Infof("Failed to execute Graceful Restart command")
+		klog.V(90).Infof("Failed to execute Graceful Restart command")
 
 		return GRStatus{}, err
 	}
@@ -469,7 +545,7 @@ func GetGracefulRestartStatus(frrPod *pod.Builder, neighborIP string) (GRStatus,
 
 	err = json.Unmarshal(grStateOut.Bytes(), &bgpNeighborGRStatus)
 	if err != nil {
-		glog.V(90).Infof("Failed to Unmarshal grStateOut string: %s in to GRStatus struct", grStateOut.String())
+		klog.V(90).Infof("Failed to Unmarshal grStateOut string: %s in to GRStatus struct", grStateOut.String())
 
 		return GRStatus{}, err
 	}
@@ -529,7 +605,6 @@ func VerifyBGPReceivedRoutesOnFrrNodes(frrk8sPods []*pod.Builder) (string, error
 
 		// Parse the JSON output to get the BGP routes
 		bgpRoutes, err := parseBGPReceivedRoutes(output.String())
-
 		if err != nil {
 			return "", fmt.Errorf("error parsing BGP JSON from pod %s: %w", frrk8sPod.Definition.Name, err)
 		}
@@ -592,7 +667,7 @@ func parseBGPAdvertisedRoutes(jsonData string) (string, error) {
 
 // ResetBGPConnection restarts the TCP connection.
 func ResetBGPConnection(frrPod *pod.Builder) error {
-	glog.V(90).Infof("Resetting BGP session to all neighbors: %s", frrPod.Definition.Name)
+	klog.V(90).Infof("Resetting BGP session to all neighbors: %s", frrPod.Definition.Name)
 
 	_, err := frrPod.ExecCommand(append(netparam.VtySh, "clear ip bgp *"))
 
@@ -602,7 +677,6 @@ func ResetBGPConnection(frrPod *pod.Builder) error {
 // ValidateLocalPref verifies local pref from FRR is equal to configured Local Pref.
 func ValidateLocalPref(frrPod *pod.Builder, localPref uint32, ipFamily string) error {
 	bgpStatus, err := getBgpStatus(frrPod, fmt.Sprintf("show ip bgp %s json", ipFamily))
-
 	if err != nil {
 		return fmt.Errorf("failed to get BGP status %w", err)
 	}
@@ -624,7 +698,7 @@ func VerifyBGPNeighborTimer(
 ) (bool, error) {
 	var result map[string]bgpDescription
 
-	glog.Infof("Verifying BGP Neighbor Timers for neighbor %s", neighborIPAddress)
+	klog.Infof("Verifying BGP Neighbor Timers for neighbor %s", neighborIPAddress)
 
 	bgpStateOut, err := frrPod.ExecCommand(append(netparam.VtySh, "sh ip bgp neighbor json"))
 	if err != nil {
@@ -715,30 +789,30 @@ func GetInterfaceStatus(frrPod *pod.Builder, interfaceName string, containerName
 		cName = containerName[0]
 	}
 
-	glog.V(90).Infof("Getting interface status from container: %s of pod: %s", cName, frrPod.Definition.Name)
+	klog.V(90).Infof("Getting interface status from container: %s of pod: %s", cName, frrPod.Definition.Name)
 
 	cmd := fmt.Sprintf("show interface %s json", interfaceName)
-	interfaceStateOut, err := frrPod.ExecCommand(append(netparam.VtySh, cmd), tsparams.FRRContainerName)
 
+	interfaceStateOut, err := frrPod.ExecCommand(append(netparam.VtySh, cmd), tsparams.FRRContainerName)
 	if err != nil {
-		glog.V(90).Infof(fmt.Sprintf("Failed to execute command show interface %s json", interfaceName))
+		klog.V(90).Infof("Failed to execute command show interface %s json", interfaceName)
 
 		return nil, err
 	}
 
 	// JSON is a map[string]InterfaceDetails
 	ifaceMap := make(map[string]InterfaceDetails)
-	err = json.Unmarshal(interfaceStateOut.Bytes(), &ifaceMap)
 
+	err = json.Unmarshal(interfaceStateOut.Bytes(), &ifaceMap)
 	if err != nil {
-		glog.V(90).Infof("Failed to unmarshal JSON: %s", interfaceStateOut.String())
+		klog.V(90).Infof("Failed to unmarshal JSON: %s", interfaceStateOut.String())
 
 		return nil, err
 	}
 
 	iface, ok := ifaceMap[interfaceName]
 	if !ok {
-		glog.V(90).Infof("Failed to find interface: %s", interfaceName)
+		klog.V(90).Infof("Failed to find interface: %s", interfaceName)
 
 		return nil, err
 	}

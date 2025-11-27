@@ -5,8 +5,8 @@ import (
 	"time"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
+	"k8s.io/klog/v2"
 
-	"github.com/golang/glog"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/apiservers"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
@@ -23,42 +23,38 @@ var imageRegistryDeploymentName = "image-registry"
 // SetManagementState returns true when succeeded to change imageRegistry operator management state.
 func SetManagementState(apiClient *clients.Settings, expectedManagementState operatorv1.ManagementState) error {
 	irConfigObj, err := imageregistry.Pull(apiClient, imageRegistryObjName)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to get imageRegistry operator due to %v",
+		klog.V(100).Infof("Failed to get imageRegistry operator due to %v",
 			err.Error())
 
 		return err
 	}
 
-	glog.V(100).Infof("Set imageRegistry %s ManagementState to the %v",
+	klog.V(100).Infof("Set imageRegistry %s ManagementState to the %v",
 		irConfigObj.Definition.Name, expectedManagementState)
 
 	currentManagementState, err := irConfigObj.GetManagementState()
-
 	if err != nil {
-		glog.V(100).Infof("Failed to get current imageRegistry operator management state value due to %v",
+		klog.V(100).Infof("Failed to get current imageRegistry operator management state value due to %v",
 			err.Error())
 
 		return err
 	}
 
 	if *currentManagementState != expectedManagementState {
-		glog.V(100).Infof("The current imageRegistry %s ManagementState is %v; it needs to be changed to the %v",
+		klog.V(100).Infof("The current imageRegistry %s ManagementState is %v; it needs to be changed to the %v",
 			irConfigObj.Definition.Name, currentManagementState, expectedManagementState)
 
 		irConfig, err := irConfigObj.WithManagementState(expectedManagementState).Update()
-
 		if err != nil {
-			glog.V(100).Infof("Failed to make change to the imageRegistry operator managementState due to %v", err)
+			klog.V(100).Infof("Failed to make change to the imageRegistry operator managementState due to %v", err)
 
 			return err
 		}
 
 		newManagementState, err := irConfig.GetManagementState()
-
 		if err != nil {
-			glog.V(100).Infof("Failed to get current imageRegistry operator managementState value due to %v", err)
+			klog.V(100).Infof("Failed to get current imageRegistry operator managementState value due to %v", err)
 
 			return err
 		}
@@ -77,7 +73,6 @@ func SetManagementState(apiClient *clients.Settings, expectedManagementState ope
 // SetStorageToTheEmptyDir sets the imageRegistry storage to an empty directory.
 func SetStorageToTheEmptyDir(apiClient *clients.Settings) error {
 	irClusterOperator, err := clusteroperator.Pull(apiClient, imageRegistryCoName)
-
 	if err != nil {
 		return err
 	}
@@ -88,16 +83,14 @@ func SetStorageToTheEmptyDir(apiClient *clients.Settings) error {
 			imageRegistryDeploymentName,
 			imageRegistryNamespace,
 			time.Second*2)
-
 		if err == nil {
 			return nil
 		}
 	}
 
-	glog.V(100).Infof("Setting up imageRegistry storage to the EmptyDir")
+	klog.V(100).Infof("Setting up imageRegistry storage to the EmptyDir")
 
 	imageRegistryObj, err := imageregistry.Pull(apiClient, imageRegistryObjName)
-
 	if err != nil {
 		return err
 	}
@@ -108,17 +101,15 @@ func SetStorageToTheEmptyDir(apiClient *clients.Settings) error {
 	}
 
 	irConfig, err := imageRegistryObj.WithStorage(emptyDirStorage).Update()
-
 	if err != nil {
-		glog.V(100).Infof("Failed to change an imageRegistryObj config and setup storage to the EmptyDir")
+		klog.V(100).Infof("Failed to change an imageRegistryObj config and setup storage to the EmptyDir")
 
 		return err
 	}
 
 	newStorageConfig, err := irConfig.GetStorageConfig()
-
 	if err != nil {
-		glog.V(100).Infof("Failed to get current imageRegistry Storage configuration due to %v", err)
+		klog.V(100).Infof("Failed to get current imageRegistry Storage configuration due to %v", err)
 
 		return err
 	}
@@ -129,27 +120,24 @@ func SetStorageToTheEmptyDir(apiClient *clients.Settings) error {
 	}
 
 	err = WaitForAPIServersUpdate(apiClient)
-
 	if err != nil {
 		return err
 	}
 
-	glog.V(100).Info("Wait for the image-registry deployment succeeded")
+	klog.V(100).Info("Wait for the image-registry deployment succeeded")
 
 	err = await.WaitUntilDeploymentReady(
 		apiClient,
 		imageRegistryDeploymentName,
 		imageRegistryNamespace,
 		time.Minute*5)
-
 	if err != nil {
-		glog.V(100).Infof("image-registry deployment failure due to %s", err.Error())
+		klog.V(100).Infof("image-registry deployment failure due to %s", err.Error())
 
 		return err
 	}
 
 	err = WaitForImageregistryCoIsAvailable(apiClient)
-
 	if err != nil {
 		return err
 	}
@@ -159,34 +147,30 @@ func SetStorageToTheEmptyDir(apiClient *clients.Settings) error {
 
 // WaitForAPIServersUpdate waits for the openshiftapiserver and kubeapiserver update finished.
 func WaitForAPIServersUpdate(apiClient *clients.Settings) error {
-	glog.V(100).Info("Wait for the openshiftapiserver APIServerDeploymentProgressing ending, " +
+	klog.V(100).Info("Wait for the openshiftapiserver APIServerDeploymentProgressing ending, " +
 		"pods have to be updated to the latest generation")
 
 	oasBuilder, err := apiservers.PullOpenshiftAPIServer(apiClient)
-
 	if err != nil {
 		return err
 	}
 
 	err = oasBuilder.WaitAllPodsAtTheLatestGeneration(time.Minute * 10)
-
 	if err != nil {
-		glog.V(100).Infof("Failed to update openshiftapiserver due to: %v", err)
+		klog.V(100).Infof("Failed to update openshiftapiserver due to: %v", err)
 
 		return err
 	}
 
-	glog.V(100).Info("Wait for the kubeapiserver NodeInstallerProgressing ending, " +
+	klog.V(100).Info("Wait for the kubeapiserver NodeInstallerProgressing ending, " +
 		"nodes have to be updated to the latest revision")
 
 	kasBuilder, err := apiservers.PullKubeAPIServer(apiClient)
-
 	if err != nil {
 		return err
 	}
 
 	err = kasBuilder.WaitAllNodesAtTheLatestRevision(time.Minute * 15)
-
 	if err != nil {
 		return err
 	}
@@ -196,10 +180,9 @@ func WaitForAPIServersUpdate(apiClient *clients.Settings) error {
 
 // WaitForImageregistryCoIsAvailable verifies imageregistryconfig co is Available.
 func WaitForImageregistryCoIsAvailable(apiClient *clients.Settings) error {
-	glog.V(100).Infof("Asserting clusteroperators availability")
+	klog.V(100).Infof("Asserting clusteroperators availability")
 
 	imageRegistryCo, err := clusteroperator.Pull(apiClient, imageRegistryCoName)
-
 	if err != nil {
 		return err
 	}
@@ -209,7 +192,6 @@ func WaitForImageregistryCoIsAvailable(apiClient *clients.Settings) error {
 	}
 
 	err = imageRegistryCo.WaitUntilAvailable(time.Minute * 2)
-
 	if err != nil {
 		return err
 	}

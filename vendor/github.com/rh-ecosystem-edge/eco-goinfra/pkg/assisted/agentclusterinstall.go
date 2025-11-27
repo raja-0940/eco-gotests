@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/internal/logging"
 	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 	hiveextV1Beta1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	hivev1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/hive/api/v1"
@@ -20,6 +20,7 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -49,14 +50,14 @@ func NewAgentClusterInstallBuilder(
 	workerCount int,
 	network hiveextV1Beta1.Networking) *AgentClusterInstallBuilder {
 	if apiClient == nil {
-		glog.V(100).Infof("The apiClient cannot be nil")
+		klog.V(100).Info("The apiClient cannot be nil")
 
 		return nil
 	}
 
 	err := apiClient.AttachScheme(hiveextV1Beta1.AddToScheme)
 	if err != nil {
-		glog.V(100).Infof("Failed to add hive v1beta1 scheme to client schemes")
+		klog.V(100).Info("Failed to add hive v1beta1 scheme to client schemes")
 
 		return nil
 	}
@@ -82,7 +83,7 @@ func NewAgentClusterInstallBuilder(
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the agentclusterinstall is empty")
+		klog.V(100).Info("The name of the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'name' cannot be empty"
 
@@ -90,7 +91,7 @@ func NewAgentClusterInstallBuilder(
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the agentclusterinstall is empty")
+		klog.V(100).Info("The namespace of the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'namespace' cannot be empty"
 
@@ -98,7 +99,7 @@ func NewAgentClusterInstallBuilder(
 	}
 
 	if clusterDeployment == "" {
-		glog.V(100).Infof("The clusterDeployment ref for the agentclusterinstall is empty")
+		klog.V(100).Info("The clusterDeployment ref for the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'clusterDeployment' cannot be empty"
 
@@ -115,7 +116,7 @@ func (builder *AgentClusterInstallBuilder) WithAPIVip(apiVIP string) *AgentClust
 	}
 
 	if net.ParseIP(apiVIP) == nil {
-		glog.V(100).Infof("The apiVIP is not a properly formatted IP address")
+		klog.V(100).Info("The apiVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall apiVIP incorrectly formatted"
 
@@ -134,7 +135,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalAPIVip(apiVIP string) *
 	}
 
 	if net.ParseIP(apiVIP) == nil {
-		glog.V(100).Infof("The apiVIP is not a properly formatted IP address")
+		klog.V(100).Info("The apiVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall apiVIP incorrectly formatted"
 
@@ -153,7 +154,7 @@ func (builder *AgentClusterInstallBuilder) WithIngressVip(ingressVIP string) *Ag
 	}
 
 	if net.ParseIP(ingressVIP) == nil {
-		glog.V(100).Infof("The ingressVIP is not a properly formatted IP address")
+		klog.V(100).Info("The ingressVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall ingressVIP incorrectly formatted"
 
@@ -172,7 +173,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalIngressVip(ingressVIP s
 	}
 
 	if net.ParseIP(ingressVIP) == nil {
-		glog.V(100).Infof("The ingressVIP is not a properly formatted IP address")
+		klog.V(100).Info("The ingressVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall ingressVIP incorrectly formatted"
 
@@ -279,7 +280,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalClusterNetwork(
 	}
 
 	if _, _, err := net.ParseCIDR(cidr); err != nil {
-		glog.V(100).Infof("The agentclusterinstall passed invalid clusterNetwork cidr: %s", cidr)
+		klog.V(100).Infof("The agentclusterinstall passed invalid clusterNetwork cidr: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid clusterNetwork cidr"
 
@@ -287,7 +288,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalClusterNetwork(
 	}
 
 	if prefix <= 0 {
-		glog.V(100).Infof("Agentclusterinstall passed invalid clusterNetwork prefix: %s", cidr)
+		klog.V(100).Infof("Agentclusterinstall passed invalid clusterNetwork prefix: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid clusterNetwork prefix"
 
@@ -308,7 +309,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalServiceNetwork(cidr str
 	}
 
 	if _, _, err := net.ParseCIDR(cidr); err != nil {
-		glog.V(100).Infof("The agentclusterinstall passed invalid serviceNetwork cidr: %s", cidr)
+		klog.V(100).Infof("The agentclusterinstall passed invalid serviceNetwork cidr: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid serviceNetwork cidr"
 
@@ -381,13 +382,13 @@ func (builder *AgentClusterInstallBuilder) WithOptions(
 		return builder
 	}
 
-	glog.V(100).Infof("Setting AgentClusterInstall additional options")
+	klog.V(100).Info("Setting AgentClusterInstall additional options")
 
 	for _, option := range options {
 		if option != nil {
 			builder, err := option(builder)
 			if err != nil {
-				glog.V(100).Infof("Error occurred in mutation function")
+				klog.V(100).Info("Error occurred in mutation function")
 
 				builder.errorMsg = err.Error()
 
@@ -447,7 +448,7 @@ func (builder *AgentClusterInstallBuilder) GetEvents(skipCertVerify bool) (model
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting cluster events from agentclusterinstall %s in namespace %s",
+	klog.V(100).Infof("Getting cluster events from agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
@@ -462,7 +463,7 @@ func (builder *AgentClusterInstallBuilder) GetEvents(skipCertVerify bool) (model
 
 	client := http.Client{Transport: eventsTransport}
 
-	glog.V(100).Infof("Getting events from url: %s", builder.Object.Status.DebugInfo.EventsURL)
+	klog.V(100).Infof("Getting events from url: %s", builder.Object.Status.DebugInfo.EventsURL)
 
 	res, err := client.Get(builder.Object.Status.DebugInfo.EventsURL)
 	if err != nil {
@@ -476,7 +477,7 @@ func (builder *AgentClusterInstallBuilder) GetEvents(skipCertVerify bool) (model
 		return nil, err
 	}
 
-	glog.V(100).Infof("Creating EventList from returned events")
+	klog.V(100).Info("Creating EventList from returned events")
 
 	var events models.EventList
 
@@ -494,12 +495,12 @@ func (builder *AgentClusterInstallBuilder) Get() (*hiveextV1Beta1.AgentClusterIn
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting agentclusterinstall %s in namespace %s",
+	klog.V(100).Infof("Getting agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	agentClusterInstall := &hiveextV1Beta1.AgentClusterInstall{}
 
-	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
+	err := builder.apiClient.Get(logging.DiscardContext(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
 	}, agentClusterInstall)
@@ -512,17 +513,17 @@ func (builder *AgentClusterInstallBuilder) Get() (*hiveextV1Beta1.AgentClusterIn
 
 // PullAgentClusterInstall pulls existing agentclusterinstall from cluster.
 func PullAgentClusterInstall(apiClient *clients.Settings, name, nsname string) (*AgentClusterInstallBuilder, error) {
-	glog.V(100).Infof("Pulling existing agentclusterinstall name %s under namespace %s from cluster", name, nsname)
+	klog.V(100).Infof("Pulling existing agentclusterinstall name %s under namespace %s from cluster", name, nsname)
 
 	if apiClient == nil {
-		glog.V(100).Infof("The apiClient cannot be nil")
+		klog.V(100).Info("The apiClient cannot be nil")
 
 		return nil, fmt.Errorf("the apiClient is nil")
 	}
 
 	err := apiClient.AttachScheme(hiveextV1Beta1.AddToScheme)
 	if err != nil {
-		glog.V(100).Infof("Failed to add hive v1beta1 scheme to client schemes")
+		klog.V(100).Info("Failed to add hive v1beta1 scheme to client schemes")
 
 		return nil, err
 	}
@@ -538,13 +539,13 @@ func PullAgentClusterInstall(apiClient *clients.Settings, name, nsname string) (
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the agentclusterinstall is empty")
+		klog.V(100).Info("The name of the agentclusterinstall is empty")
 
 		return nil, fmt.Errorf("agentclusterinstall 'name' cannot be empty")
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the agentclusterinstall is empty")
+		klog.V(100).Info("The namespace of the agentclusterinstall is empty")
 
 		return nil, fmt.Errorf("agentclusterinstall 'namespace' cannot be empty")
 	}
@@ -564,12 +565,12 @@ func (builder *AgentClusterInstallBuilder) Create() (*AgentClusterInstallBuilder
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the agentclusterinstall %s in namespace %s",
+	klog.V(100).Infof("Creating the agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
-		err = builder.apiClient.Create(context.TODO(), builder.Definition)
+		err = builder.apiClient.Create(logging.DiscardContext(), builder.Definition)
 		if err == nil {
 			builder.Object = builder.Definition
 		}
@@ -584,25 +585,23 @@ func (builder *AgentClusterInstallBuilder) Update(force bool) (*AgentClusterInst
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating agentclusterinstall %s in namespace %s",
+	klog.V(100).Infof("Updating agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
 		return nil, fmt.Errorf("cannot update non-existent agentclusterinstall")
 	}
 
-	err := builder.apiClient.Update(context.TODO(), builder.Definition)
+	err := builder.apiClient.Update(logging.DiscardContext(), builder.Definition)
 	if err != nil {
 		if force {
-			glog.V(100).Infof(
-				msg.FailToUpdateNotification("agentclusterinstall", builder.Definition.Name, builder.Definition.Namespace))
+			klog.V(100).Infof("%v", msg.FailToUpdateNotification("agentclusterinstall", builder.Definition.Name, builder.Definition.Namespace))
 
 			err = builder.DeleteAndWait(time.Second * 10)
 			builder.Definition.ResourceVersion = ""
 
 			if err != nil {
-				glog.V(100).Infof(
-					msg.FailToUpdateError("agentclusterinstall", builder.Definition.Name, builder.Definition.Namespace))
+				klog.V(100).Infof("%v", msg.FailToUpdateError("agentclusterinstall", builder.Definition.Name, builder.Definition.Namespace))
 
 				return nil, err
 			}
@@ -624,11 +623,11 @@ func (builder *AgentClusterInstallBuilder) Delete() error {
 		return err
 	}
 
-	glog.V(100).Infof("Deleting the agentclusterinstall %s in namespace %s",
+	klog.V(100).Infof("Deleting the agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("agentclusterinstall %s in namespace %s does not exist",
+		klog.V(100).Infof("agentclusterinstall %s in namespace %s does not exist",
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.Object = nil
@@ -636,7 +635,7 @@ func (builder *AgentClusterInstallBuilder) Delete() error {
 		return nil
 	}
 
-	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
+	err := builder.apiClient.Delete(logging.DiscardContext(), builder.Definition)
 
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("cannot delete agentclusterinstall: %w", err)
@@ -653,7 +652,7 @@ func (builder *AgentClusterInstallBuilder) DeleteAndWait(timeout time.Duration) 
 		return err
 	}
 
-	glog.V(100).Infof(`Deleting agentclusterinstall %s in namespace %s and 
+	klog.V(100).Infof(`Deleting agentclusterinstall %s in namespace %s and
 	waiting for the defined period until it is removed`,
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -679,7 +678,7 @@ func (builder *AgentClusterInstallBuilder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if agentclusterinstall %s exists in namespace %s",
+	klog.V(100).Infof("Checking if agentclusterinstall %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -730,25 +729,25 @@ func (builder *AgentClusterInstallBuilder) validate() (bool, error) {
 	resourceCRD := "AgentClusterInstall"
 
 	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+		klog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
 
 		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
+		klog.V(100).Infof("The %s is undefined", resourceCRD)
 
 		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+		klog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+		klog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf("%s", builder.errorMsg)
 	}
